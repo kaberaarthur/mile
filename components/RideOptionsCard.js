@@ -6,11 +6,11 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
-import { useEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { selectTravelTimeInformation } from "../slices/navSlice";
 
