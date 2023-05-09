@@ -39,7 +39,13 @@ const NavigateCard = () => {
             );
 
             // Navigate to Ride Options
-            navigation.navigate("RideOptionsCard");
+            // navigation.navigate("RideOptionsCard");
+
+            // Navigate to Ride Options and pass destination location as route parameter
+            navigation.navigate("RideOptionsCard", {
+              destinationLocation: details.geometry.location,
+            });
+            console.log(details.geometry.location);
           }}
           query={{
             key: GOOGLE_MAPS_APIKEY,
