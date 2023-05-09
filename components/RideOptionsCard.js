@@ -14,6 +14,11 @@ import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { selectTravelTimeInformation } from "../slices/navSlice";
 
+// Round off Price to Nearest Ten
+function roundToNearestTen(number) {
+  return Math.round(number / 10) * 10;
+}
+
 const data = [
   {
     id: "Standard-Ride",
@@ -69,7 +74,7 @@ const RideOptionsCard = () => {
         ${!selected && "bg-gray-300"}`}
           >
             <Text style={tw`text-center text-white text-xl`}>
-              Choose {selected?.title}
+              Confirm {selected?.title}
             </Text>
           </TouchableOpacity>
         </View>
@@ -80,7 +85,7 @@ const RideOptionsCard = () => {
         renderItem={({ item: { id, title, multiplier, image }, item }) => (
           <TouchableOpacity
             onPress={() => setSelected(item)}
-            style={tw`flex-row justify-between items-center px-10 ${
+            style={tw`flex-row justify-between items-center px-6 ${
               id === selected?.id && "bg-gray-200"
             }`}
           >
@@ -96,7 +101,16 @@ const RideOptionsCard = () => {
               <Text style={tw`text-xl font-semibold`}>{title}</Text>
               <Text>{travelTimeInformation?.duration.text} - Travel time</Text>
             </View>
-            <Text style={tw`text-lg`}>780</Text>
+            <Text style={tw`text-base font-bold`}>
+              Kshs.
+              {roundToNearestTen(
+                30 *
+                  parseInt(
+                    travelTimeInformation?.duration.text.replace(/ mins/, "")
+                  ) *
+                  multiplier
+              )}
+            </Text>
           </TouchableOpacity>
         )}
       />

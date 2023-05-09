@@ -13,6 +13,9 @@ import {
 
 import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
+import { Image } from "react-native";
+
+const markerImage = require("../assets/taxi-marker.png");
 
 const Map = () => {
   const origin = useSelector(selectOrigin);
@@ -85,7 +88,12 @@ const Map = () => {
           title="Origin"
           description={origin.description}
           identifier="origin"
-        />
+          anchor={{ x: 0.5, y: 0.5 }}
+        >
+          <View style={styles.markerView}>
+            <Image source={markerImage} style={styles.markerImage} />
+          </View>
+        </Marker>
       )}
 
       {destination?.location && (
@@ -103,6 +111,24 @@ const Map = () => {
   );
 };
 
-export default Map;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  marker: {
+    position: "absolute",
+  },
+  map: {
+    width: "100%",
+    height: "100%",
+  },
+  markerImage: {
+    width: 20,
+    height: 55,
+    transform: [{ rotate: "165deg" }],
+  },
+});
 
-const styles = StyleSheet.create({});
+export default Map;
