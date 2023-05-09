@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,7 +9,7 @@ import {
 import tw from "tailwind-react-native-classnames";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { GOOGLE_MAPS_APIKEY } from "@env";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setDestination } from "../slices/navSlice";
 import { useNavigation } from "@react-navigation/native";
 import NavFavourites from "./NavFavourites";
@@ -39,13 +39,8 @@ const NavigateCard = () => {
             );
 
             // Navigate to Ride Options
-            // navigation.navigate("RideOptionsCard");
-
-            // Navigate to Ride Options and pass destination location as route parameter
-            navigation.navigate("RideOptionsCard", {
-              destinationLocation: details.geometry.location,
-            });
-            console.log(details.geometry.location);
+            navigation.navigate("RideOptionsCard");
+            // console.log(details.geometry.location);
           }}
           query={{
             key: GOOGLE_MAPS_APIKEY,
