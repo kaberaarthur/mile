@@ -35,10 +35,10 @@ const ProfileScreen = () => {
           onPress={() => navigation.navigate("HomeScreen")}
           style={tw`p-3 rounded-full`}
         >
-          <Icon type="font-awesome" name="chevron-left" color="black" />
+          <Icon type="font-awesome" name="chevron-left" color="#1f2937" />
         </TouchableOpacity>
         <Text style={tw`text-base font-bold`}>Profile</Text>
-        <Icon type="font-awesome" name="pencil" color="black" />
+        <Icon type="font-awesome" name="pencil" color="#1f2937" />
       </View>
       <View style={[tw`flex-1 items-center justify-center`]}>
         <Image
@@ -50,7 +50,9 @@ const ProfileScreen = () => {
             },
           ]}
         />
-        <Text style={tw`text-center text-2xl font-bold`}>{user.name}</Text>
+        <Text style={tw`text-center text-2xl font-bold text-gray-800`}>
+          {user.name}
+        </Text>
         <Text style={tw`text-center text-base text-gray-600`}>
           {user.phone}
         </Text>
