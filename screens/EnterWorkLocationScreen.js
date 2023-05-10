@@ -10,12 +10,15 @@ import {
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { GOOGLE_MAPS_APIKEY } from "@env";
 import tw from "tailwind-react-native-classnames";
+import { useNavigation } from "@react-navigation/native";
 
 const EnterWorkLocationScreen = () => {
   const [locationSelected, setLocationSelected] = useState(false);
+  const navigation = useNavigation();
 
   const handleLocationSet = () => {
     console.log("Work Location is Set");
+    navigation.navigate("ProfileScreen");
   };
 
   return (
