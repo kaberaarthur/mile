@@ -6,6 +6,10 @@ import { store } from "./store";
 import HomeScreen from "./screens/HomeScreen";
 import MapScreen from "./screens/MapScreen";
 import EatScreen from "./screens/EatScreen";
+import ActivityScreen from "./screens/ActivityScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import WalletScreen from "./screens/WalletScreen";
+import PartnershipsScreen from "./screens/PartnershipsScreen";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
@@ -43,6 +47,34 @@ export default function App() {
               <Stack.Screen
                 name="EatScreen"
                 component={EatScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="ActivityScreen"
+                component={ActivityScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="WalletScreen"
+                component={WalletScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="PartnershipsScreen"
+                component={PartnershipsScreen}
                 options={{
                   headerShown: false,
                 }}
