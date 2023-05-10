@@ -11,6 +11,10 @@ import ProfileScreen from "./screens/ProfileScreen";
 import WalletScreen from "./screens/WalletScreen";
 import PartnershipsScreen from "./screens/PartnershipsScreen";
 
+import DeleteAccountScreen from "./screens/DeleteAccountScreen";
+import EnterWorkLocationScreen from "./screens/EnterWorkLocationScreen";
+import EnterHomeLocationScreen from "./screens/EnterHomeLocationScreen";
+
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -75,6 +79,28 @@ export default function App() {
               <Stack.Screen
                 name="PartnershipsScreen"
                 component={PartnershipsScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+
+              <Stack.Screen
+                name="DeleteAccountScreen"
+                component={DeleteAccountScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="EnterHomeLocationScreen"
+                component={EnterHomeLocationScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="EnterWorkLocationScreen"
+                component={EnterWorkLocationScreen}
                 options={{
                   headerShown: false,
                 }}
