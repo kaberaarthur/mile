@@ -38,7 +38,12 @@ const ProfileScreen = () => {
           <Icon type="font-awesome" name="chevron-left" color="#1f2937" />
         </TouchableOpacity>
         <Text style={tw`text-base font-bold`}>Profile</Text>
-        <Icon type="font-awesome" name="pencil" color="#1f2937" />
+        <Icon
+          type="font-awesome"
+          name="pencil"
+          color="#1f2937"
+          onPress={() => navigation.navigate("EditProfileScreen")}
+        />
       </View>
       <View style={[tw`flex-1 items-center justify-center`]}>
         <Image
