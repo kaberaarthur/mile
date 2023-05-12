@@ -74,7 +74,7 @@ const PartnershipsScreen = () => {
           ]}
           onPress={copyToClipboard}
         >
-          {`https://example.com/${partnerData.code}`}
+          {`https://mile.ke/partners/${partnerData.code}`}
         </Text>
         <Text style={tw`text-sm font-semibold text-gray-900 mt-1`}>
           Partner Code: {partnerData.code}
