@@ -11,7 +11,7 @@ export default function ReportIssueScreen() {
     {
       issue: "Driver took a poor route",
       response:
-        "To avoid traffic or certain road conditions, your driver may choose a longer route. You can also discuss the preferred route with driver before starting the ride.",
+        "To avoid traffic or certain road conditions, your driver may choose a longer route. You can also discuss the preferred route with driver before starting the ride. If the final peicw is different from the estimated one, please contact our Support team through this article by using the app.",
     },
     {
       issue: "My driver was rude",
@@ -41,14 +41,26 @@ export default function ReportIssueScreen() {
       </Text>
 
       {issues.map((item, index) => (
-        <View key={index} style={tw`mb-5`}>
-          <View
-            style={tw`flex-row justify-between items-center border-b border-gray-400 pb-2`}
-          >
-            <Text style={tw`font-bold text-base`}>{item.issue}</Text>
-            <Icon type="ionicon" name="chevron-forward-outline" color="black" />
+        <TouchableOpacity
+          key={index}
+          style={tw`mb-5`}
+          onPress={() =>
+            navigation.navigate("OneRideIssueScreen", { issue: item })
+          }
+        >
+          <View key={index} style={tw`mb-5`}>
+            <View
+              style={tw`flex-row justify-between items-center border-b border-gray-400 pb-2`}
+            >
+              <Text style={tw`font-bold text-base`}>{item.issue}</Text>
+              <Icon
+                type="ionicon"
+                name="chevron-forward-outline"
+                color="black"
+              />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );

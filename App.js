@@ -10,6 +10,7 @@ import EatScreen from "./screens/EatScreen";
 import ActivityScreen from "./screens/ActivityScreen";
 import RideDetailsScreen from "./screens/RideDetailsScreen";
 import ReportIssueScreen from "./screens/ReportIssueScreen";
+import OneRideIssueScreen from "./screens/OneRideIssueScreen";
 
 import ProfileScreen from "./screens/ProfileScreen";
 import WalletScreen from "./screens/WalletScreen";
@@ -77,6 +78,13 @@ export default function App() {
               <Stack.Screen
                 name="ReportIssueScreen"
                 component={ReportIssueScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="OneRideIssueScreen"
+                component={OneRideIssueScreen}
                 options={{
                   headerShown: false,
                 }}
