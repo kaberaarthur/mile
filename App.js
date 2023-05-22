@@ -6,7 +6,10 @@ import { store } from "./store";
 import HomeScreen from "./screens/HomeScreen";
 import MapScreen from "./screens/MapScreen";
 import EatScreen from "./screens/EatScreen";
+
 import ActivityScreen from "./screens/ActivityScreen";
+import RideDetailsScreen from "./screens/RideDetailsScreen";
+
 import ProfileScreen from "./screens/ProfileScreen";
 import WalletScreen from "./screens/WalletScreen";
 import PartnershipsScreen from "./screens/PartnershipsScreen";
@@ -59,6 +62,13 @@ export default function App() {
               <Stack.Screen
                 name="ActivityScreen"
                 component={ActivityScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="RideDetailsScreen"
+                component={RideDetailsScreen}
                 options={{
                   headerShown: false,
                 }}

@@ -15,7 +15,8 @@ const ridesData = [
     id: 1,
     userID: 101,
     driverID: 201,
-    driverName: "John Doe",
+    driverName: "John Njau",
+    driverPhone: "+254792456432",
     origin: {
       lat: 40.7128,
       long: -74.006,
@@ -29,6 +30,7 @@ const ridesData = [
     startTime: "2023-05-01T09:00:00",
     endTime: "2023-05-01T09:35:00",
     cost: 180,
+    paymentType: "Cash",
     minutes: 35,
     numberPlate: "KAB 123A",
   },
@@ -36,7 +38,8 @@ const ridesData = [
     id: 2,
     userID: 101,
     driverID: 202,
-    driverName: "Jane Smith",
+    driverName: "Arthur Kabera",
+    driverPhone: "+254790485731",
     origin: {
       lat: 40.7831,
       long: -73.9712,
@@ -50,6 +53,7 @@ const ridesData = [
     startTime: "2023-05-02T13:00:00",
     endTime: "2023-05-02T13:25:00",
     cost: 375,
+    paymentType: "Mpesa",
     minutes: 25,
     numberPlate: "KBD 456B",
   },
@@ -57,7 +61,8 @@ const ridesData = [
     id: 3,
     userID: 101,
     driverID: 203,
-    driverName: "Mike Johnson",
+    driverName: "Purity Njoroge",
+    driverPhone: "+254703557082",
     origin: {
       lat: 40.7484,
       long: -73.9857,
@@ -71,6 +76,7 @@ const ridesData = [
     startTime: "2022-11-03T18:00:00",
     endTime: "2022-11-03T18:20:00",
     cost: 560,
+    paymentType: "Card",
     minutes: 20,
     numberPlate: "KCF 789C",
   },
@@ -79,6 +85,7 @@ const ridesData = [
     userID: 101,
     driverID: 204,
     driverName: "Sarah Lee",
+    driverPhone: "+254790485766",
     origin: {
       lat: 40.761,
       long: -73.9773,
@@ -92,8 +99,9 @@ const ridesData = [
     startTime: "2022-01-04T10:00:00",
     endTime: "2022-01-04T10:45:00",
     cost: 180,
+    paymentType: "Cash",
     minutes: 45,
-    numberPlate: "KDG 123D",
+    numberPlate: "KDG 682D",
   },
 ];
 
@@ -131,34 +139,41 @@ const ActivityScreen = () => {
           <View key={monthYear}>
             <Text style={tw`text-lg font-bold mt-3 mb-2`}>{monthYear}</Text>
             {groupedRides[monthYear].map((ride) => (
-              <View style={tw`flex-row items-center mb-4`} key={ride.id}>
-                <View
-                  style={[
-                    tw`items-center justify-center rounded-full p-2`,
-                    styles.customColor,
-                  ]}
-                >
-                  <Icon type="ionicon" name="car-outline" color="black" />
-                </View>
-                <View style={tw`ml-4`}>
-                  <Text style={tw`text-lg text-gray-900 font-semibold`}>
-                    {ride.destination.description.length > 18
-                      ? ride.destination.description.substring(0, 18) + "..."
-                      : ride.destination.description}
+              <TouchableOpacity
+                key={ride.id}
+                onPress={() =>
+                  navigation.navigate("RideDetailsScreen", { ride })
+                }
+              >
+                <View style={tw`flex-row items-center mb-4`} key={ride.id}>
+                  <View
+                    style={[
+                      tw`items-center justify-center rounded-full p-2`,
+                      styles.customColor,
+                    ]}
+                  >
+                    <Icon type="ionicon" name="car-outline" color="black" />
+                  </View>
+                  <View style={tw`ml-4`}>
+                    <Text style={tw`text-lg text-gray-900 font-semibold`}>
+                      {ride.destination.description.length > 18
+                        ? ride.destination.description.substring(0, 18) + "..."
+                        : ride.destination.description}
+                    </Text>
+                    <Text style={tw`text-sm px-2 py-1 rounded-lg`}>
+                      {new Date(ride.endTime).toLocaleString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+                  <Text style={tw`text-lg text-gray-900 ml-auto font-bold`}>
+                    Ksh{ride.cost.toFixed(0)}
                   </Text>
-                  <Text style={tw`text-sm px-2 py-1 rounded-lg`}>
-                    {new Date(ride.endTime).toLocaleString("en-US", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
                 </View>
-                <Text style={tw`text-lg text-gray-900 ml-auto font-bold`}>
-                  Ksh{ride.cost.toFixed(0)}
-                </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ))}
