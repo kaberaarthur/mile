@@ -106,7 +106,7 @@ export default function RideDetails({ route }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={tw`bg-gray-200 py-4 px-4 rounded-sm`}
-          onPress={() => navigation.navigate("RideIssuesScreen")}
+          onPress={() => navigation.navigate("ReportIssueScreen")}
         >
           <Text style={tw`text-black font-bold text-lg`}>Report Ride</Text>
         </TouchableOpacity>
