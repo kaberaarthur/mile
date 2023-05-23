@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 
 import HomeScreen from "./screens/HomeScreen";
+import SignUpScreen from "./screens/SignUpScreen";
 import MapScreen from "./screens/MapScreen";
 import EatScreen from "./screens/EatScreen";
 
@@ -43,6 +44,13 @@ export default function App() {
               <Stack.Screen
                 name="HomeScreen"
                 component={HomeScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="SignUpScreen"
+                component={SignUpScreen}
                 options={{
                   headerShown: false,
                 }}
