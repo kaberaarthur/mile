@@ -12,8 +12,18 @@ import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 
 const SignUpScreen = () => {
+  const generateRandomCode = () => {
+    const min = 1000; // Minimum 4-digit number
+    const max = 9999; // Maximum 4-digit number
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
   const handleSignIn = () => {
-    // Handle sign in logic
+    const expectedCode = generateRandomCode();
+    navigation.navigate("ConfirmCodeScreen", {
+      phoneNumber: phoneNumber,
+      expectedCode: expectedCode,
+    });
   };
 
   const handleSignInWithGoogle = () => {
