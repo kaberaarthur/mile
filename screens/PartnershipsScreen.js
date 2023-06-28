@@ -39,11 +39,19 @@ const PartnershipsScreen = () => {
   );
   const partnerLink = `https://mile.ke/partners/${partnerData.code}`;
 
-  const copyToClipboard = async () => {
+  const copyLinkToClipboard = async () => {
     await Clipboard.setStringAsync(partnerLink);
     Alert.alert(
       "Link copied",
       "The partner link has been copied to clipboard."
+    );
+  };
+
+  const copyCodeToClipboard = async () => {
+    await Clipboard.setStringAsync(partnerData.code);
+    Alert.alert(
+      "Code copied",
+      "The partner code has been copied to clipboard."
     );
   };
 
@@ -67,18 +75,24 @@ const PartnershipsScreen = () => {
         <Text style={tw`text-sm font-semibold text-gray-900 mt-2`}>
           Partner link:
         </Text>
-        <Text
-          style={[
-            tw`text-xs font-semibold text-gray-900 mt-1 underline`,
-            { textDecorationColor: "gray" },
-          ]}
-          onPress={copyToClipboard}
-        >
-          {`https://mile.ke/partners/${partnerData.code}`}
+        <Text style={tw`text-xs font-semibold text-gray-900 mt-1 underline`}>
+          {partnerLink}
         </Text>
-        <Text style={tw`text-sm font-semibold text-gray-900 mt-1`}>
+        <TouchableOpacity
+          style={tw`mt-1 bg-white p-2 rounded`}
+          onPress={copyLinkToClipboard}
+        >
+          <Text style={tw`text-sm text-gray-900`}>Copy Link</Text>
+        </TouchableOpacity>
+        <Text style={tw`text-sm font-semibold text-gray-900 mt-2`}>
           Partner Code: {partnerData.code}
         </Text>
+        <TouchableOpacity
+          style={tw`mt-1 bg-white p-2 rounded`}
+          onPress={copyCodeToClipboard}
+        >
+          <Text style={tw`text-sm text-gray-900`}>Copy Code</Text>
+        </TouchableOpacity>
       </View>
       <ScrollView style={tw`h-2/3 flex-1 bg-white`}>
         {partnerData.earnings.map((earning) => (

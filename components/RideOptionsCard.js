@@ -12,7 +12,11 @@ import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
-import { selectTravelTimeInformation } from "../slices/navSlice";
+import {
+  selectTravelTimeInformation,
+  selectDestination,
+  selectOrigin,
+} from "../slices/navSlice";
 
 // Round off Price to Nearest Ten
 function roundToNearestTen(number) {
@@ -56,6 +60,13 @@ const RideOptionsCard = () => {
   const navigation = useNavigation();
   const [selected, setSelected] = useState(null);
   const travelTimeInformation = useSelector(selectTravelTimeInformation);
+  const origin = useSelector(selectOrigin);
+  const destination = useSelector(selectDestination);
+
+  const handlePress = () => {
+    console.log("Origin:", origin);
+    console.log("Destination:", destination);
+  };
 
   return (
     <View style={tw`bg-white flex-grow`}>
@@ -68,6 +79,7 @@ const RideOptionsCard = () => {
         </TouchableOpacity>
         <View>
           <TouchableOpacity
+            onPress={handlePress}
             disabled={!selected}
             style={tw`bg-black py-3 m-3 
         ${!selected && "bg-gray-300"}`}

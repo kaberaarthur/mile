@@ -7,6 +7,7 @@ import HomeScreen from "./screens/HomeScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import MapScreen from "./screens/MapScreen";
 import EatScreen from "./screens/EatScreen";
+import WaitDriverScreen from "./screens/WaitDriverScreen";
 
 import ActivityScreen from "./screens/ActivityScreen";
 import RideDetailsScreen from "./screens/RideDetailsScreen";
@@ -65,6 +66,13 @@ export default function App() {
               <Stack.Screen
                 name="EatScreen"
                 component={EatScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="WaitDriverScreen"
+                component={WaitDriverScreen}
                 options={{
                   headerShown: false,
                 }}
