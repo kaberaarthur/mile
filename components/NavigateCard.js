@@ -10,7 +10,7 @@ import tw from "tailwind-react-native-classnames";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { GOOGLE_MAPS_APIKEY } from "@env";
 import { useDispatch, useSelector } from "react-redux";
-import { setDestination } from "../slices/navSlice";
+import { selectDestination, setDestination } from "../slices/navSlice";
 import { useNavigation } from "@react-navigation/native";
 import NavFavourites from "./NavFavourites";
 import { Icon } from "react-native-elements";

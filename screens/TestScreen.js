@@ -1,19 +1,17 @@
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  SafeAreaView,
+  Image,
+  Alert,
+} from "react-native";
 import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
-import tw from "tailwind-react-native-classnames";
-import { useDispatch, useSelector } from "react-redux";
-
-import {
-  selectDestination,
-  selectOrigin,
-  setTravelTimeInformation,
-} from "../slices/navSlice";
-
 import MapViewDirections from "react-native-maps-directions";
+import tw from "tailwind-react-native-classnames";
 import { GOOGLE_MAPS_APIKEY } from "@env";
-import { Image } from "react-native";
 
 const riderLocation = {
   description: "Garden City Mall, Thika Road, Nairobi, Kenya",
@@ -32,17 +30,11 @@ const driverDetails = {
 };
 
 const WaitDriverScreen = () => {
-  // Take Map Positions from Redux Store
-  const originData = useSelector(selectOrigin);
-  const destinationData = useSelector(selectDestination);
-
-  const origin = originData.location;
-  const destination = destinationData.location;
   const mapRef = useRef(null);
 
   useEffect(() => {
     if (mapRef.current) {
-      mapRef.current.fitToSuppliedMarkers(["origin", "destination"], {
+      mapRef.current.fitToSuppliedMarkers(["driver", "rider"], {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
       });
     }
