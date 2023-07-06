@@ -64,11 +64,12 @@ const RideOptionsCard = () => {
   const destination = useSelector(selectDestination);
 
   const handlePress = () => {
-    console.log("Origin:", origin.location);
-    console.log("Destination:", destination.location);
+    console.log(".");
+    // console.log("Origin:", origin.location);
+    // console.log("Destination:", destination.location);
 
     // Navigate to WaitDriverScreen
-    // navigation.navigate("WaitDriverScreen");
+    navigation.navigate("WaitDriverScreen");
   };
 
   return (

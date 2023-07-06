@@ -28,6 +28,8 @@ import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import MapDirectionScreen from "./screens/MapDirectionScreen";
+
 // 1) Setup Redux - Complete
 
 export default function App() {
@@ -151,6 +153,14 @@ export default function App() {
               <Stack.Screen
                 name="EditProfileScreen"
                 component={EditProfileScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+
+              <Stack.Screen
+                name="MapDirectionScreen"
+                component={MapDirectionScreen}
                 options={{
                   headerShown: false,
                 }}

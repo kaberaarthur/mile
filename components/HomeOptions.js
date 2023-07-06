@@ -42,6 +42,13 @@ const data = [
     description: "",
     screen: "SignUpScreen",
   },
+  {
+    id: "6",
+    icon: "list",
+    title: "Map Directions",
+    description: "",
+    screen: "MapDirectionScreen",
+  },
 ];
 
 const HomeOptions = () => {

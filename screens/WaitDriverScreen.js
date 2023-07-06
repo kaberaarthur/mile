@@ -1,19 +1,9 @@
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
 import React, { useEffect, useRef } from "react";
-import MapView from "react-native-maps";
-import { Marker } from "react-native-maps";
+import { StyleSheet, Text, View, SafeAreaView, Image } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import tw from "tailwind-react-native-classnames";
-import { useDispatch, useSelector } from "react-redux";
-
-import {
-  selectDestination,
-  selectOrigin,
-  setTravelTimeInformation,
-} from "../slices/navSlice";
-
 import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
-import { Image } from "react-native";
 
 const riderLocation = {
   description: "Garden City Mall, Thika Road, Nairobi, Kenya",
@@ -32,17 +22,11 @@ const driverDetails = {
 };
 
 const WaitDriverScreen = () => {
-  // Take Map Positions from Redux Store
-  const originData = useSelector(selectOrigin);
-  const destinationData = useSelector(selectDestination);
-
-  const origin = originData.location;
-  const destination = destinationData.location;
   const mapRef = useRef(null);
 
   useEffect(() => {
     if (mapRef.current) {
-      mapRef.current.fitToSuppliedMarkers(["origin", "destination"], {
+      mapRef.current.fitToSuppliedMarkers(["driver", "rider"], {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
       });
     }
@@ -93,7 +77,7 @@ const WaitDriverScreen = () => {
         <View style={styles.profileImageContainer}>
           <Image
             style={styles.profileImage}
-            source={{ uri: driverDetails.profilePicture }}
+            source={driverDetails.profilePicture}
           />
         </View>
         <Text style={tw`text-lg text-gray-900`}>{driverDetails.name}</Text>
