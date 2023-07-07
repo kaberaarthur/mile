@@ -69,7 +69,7 @@ const RideOptionsCard = () => {
     // console.log("Destination:", destination.location);
 
     // Navigate to WaitDriverScreen
-    navigation.navigate("WaitDriverScreen");
+    navigation.navigate("MapDirectionScreen");
   };
 
   return (

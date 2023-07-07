@@ -1,12 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, SafeAreaView, Image, Text } from "react-native";
-import MapView from "react-native-maps";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  Image,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
 import tw from "tailwind-react-native-classnames";
 
-const origin = { latitude: -1.2850204, longitude: 36.8259191 };
-const destination = { latitude: -1.2195761, longitude: 36.88842440000001 };
+const origin = {
+  latitude: -1.2850204,
+  longitude: 36.8259191,
+  description: "Moi Avenue, next to Ambassadeur Hotel, Nairobi, Kenya",
+};
+const destination = {
+  latitude: -1.2195761,
+  longitude: 36.88842440000001,
+  description: "QVJQ+58H, Thika Rd, Nairobi, Kenya",
+};
 
 const driverDetails = {
   name: "Vusi Thembekwayo",
@@ -18,6 +33,7 @@ const MapDirectionsScreen = () => {
   const [minutes, setMinutes] = useState(null);
   const [loading, setLoading] = useState(true);
   const [travelMinutes, setTravelMinutes] = useState(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     const calculateMinutes = async () => {
@@ -30,7 +46,6 @@ const MapDirectionsScreen = () => {
 
         if (travelMinutes.length > 0) {
           setTravelMinutes(travelMinutes);
-          console.log(data.rows[0].elements[0].duration.text);
         }
       } catch (error) {
         console.error("Error calculating travel time:", error);
@@ -42,10 +57,21 @@ const MapDirectionsScreen = () => {
     calculateMinutes();
   }, []);
 
+  useEffect(() => {
+    // Fit map to markers after it's loaded
+    if (mapRef.current) {
+      mapRef.current.fitToCoordinates([origin, destination], {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
+    }
+  }, []);
+
   return (
     <View style={tw`flex-1`}>
       <View style={styles.container}>
         <MapView
+          ref={mapRef}
           style={styles.map}
           initialRegion={{
             latitude: origin.latitude,
@@ -58,9 +84,33 @@ const MapDirectionsScreen = () => {
             origin={origin}
             destination={destination}
             apikey={GOOGLE_MAPS_APIKEY}
-            strokeWidth={3}
-            strokeColor="blue"
+            strokeWidth={5}
+            strokeColor="black"
           />
+
+          {/* Origin Marker */}
+          <Marker coordinate={origin}>
+            <TouchableOpacity style={tw`bg-yellow-400 p-2 rounded-sm`}>
+              <View>
+                <Text style={tw`text-gray-900 text-xs`}>Driver Location</Text>
+                <Text style={tw`text-gray-900 text-sm font-bold`}>
+                  Tabby House, Thika
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Marker>
+
+          {/* Destination Marker */}
+          <Marker coordinate={destination}>
+            <TouchableOpacity style={tw`bg-yellow-400 p-2 rounded-sm`}>
+              <View>
+                <Text style={tw`text-gray-900 text-xs`}>Your Location</Text>
+                <Text style={tw`text-gray-900 text-sm font-bold`}>
+                  TRM Drive, Thika Road
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Marker>
         </MapView>
       </View>
 
@@ -121,6 +171,15 @@ const styles = StyleSheet.create({
   driverDetailsContainer: {
     marginLeft: 8,
     paddingLeft: 12,
+  },
+  markerButton: {
+    backgroundColor: "blue",
+    padding: 5,
+    borderRadius: 5,
+  },
+  markerText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
 
