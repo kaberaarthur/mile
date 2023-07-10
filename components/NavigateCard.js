@@ -39,7 +39,7 @@ const NavigateCard = () => {
             );
 
             // Navigate to Ride Options
-            navigation.navigate("RideOptionsCard");
+            // navigation.navigate("RideOptionsCard");
             // console.log(details.geometry.location);
           }}
           query={{

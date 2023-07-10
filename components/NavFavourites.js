@@ -1,41 +1,58 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, Modal, TextInput } from "react-native";
+import { Icon } from "react-native-elements";
 import { Ionicons } from "@expo/vector-icons";
 import RadioGroup from "react-native-radio-buttons-group";
 import tw from "tailwind-react-native-classnames";
+import { useNavigation } from "@react-navigation/native";
 
 const NavFavourites = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+
+  const data = [
+    { id: "1", text: "Cash", payment: "Pay when trip ends", icon: "cash" },
+    { id: "2", text: "Card", payment: "Pay when trip ends", icon: "card" },
+    { id: "3", text: "Wallet", payment: "Pay Instantly", icon: "wallet" },
+    {
+      id: "4",
+      text: "Mpesa (STK-PUSH)",
+      payment: "Pay when trip ends",
+      icon: "phone-portrait",
+    },
+  ];
+
+  const [selectedId, setSelectedId] = useState("1");
+  const selectedItem = data.find((item) => item.id === selectedId);
 
   const radioButtons = useMemo(
-    () => [
-      {
-        id: "cash",
-        label: "Cash\nPay when trip ends",
-        value: "cash",
-      },
-      {
-        id: "card",
-        label: "Card\nPay when trip ends",
-        value: "card",
-      },
-      {
-        id: "wallet",
-        label: "Wallet\nPay Instantly",
-        value: "wallet",
-      },
-    ],
-    []
+    () =>
+      data.map((item) => ({
+        id: item.id,
+        label: (
+          <View style={tw`flex-row justify-between items-center w-full`}>
+            <View style={tw`flex-row items-center`}>
+              <Icon name={item.icon} type="ionicon" color="black" size={24} />
+              <View style={tw`ml-2`}>
+                <Text>{item.text}</Text>
+                <Text>{item.payment}</Text>
+              </View>
+            </View>
+          </View>
+        ),
+        value: item,
+      })),
+    [data]
   );
-
-  const [selectedId, setSelectedId] = useState("cash");
 
   const handleConfirm = () => {
     console.log("Selected payment method:", selectedId);
     console.log("Promo code entered:", promoCode ? true : false, promoCode);
     setModalVisible(false);
   };
+
+  const navigation = useNavigation();
 
   return (
     <View>
@@ -47,10 +64,19 @@ const NavFavourites = () => {
         >
           <Text style={tw`text-gray-700 text-xs uppercase`}>Paying Via</Text>
           <View style={tw`flex-row justify-between`}>
-            <Ionicons name="cash" size={24} color="black" />
+            <Icon
+              name={selectedItem?.icon}
+              type="ionicon"
+              color="black"
+              size={32}
+            />
             <View>
-              <Text style={tw`text-lg font-semibold`}>Payment Method</Text>
-              <Text style={tw`text-sm font-semibold`}>When to Pay</Text>
+              <Text style={tw`text-lg font-semibold`}>
+                {selectedItem?.text}
+              </Text>
+              <Text style={tw`text-sm font-semibold`}>
+                {selectedItem?.payment}
+              </Text>
             </View>
             <Ionicons name="arrow-forward" size={24} color="black" />
           </View>
@@ -62,7 +88,7 @@ const NavFavourites = () => {
           >
             <Text
               style={tw`text-white uppercase font-bold text-lg`}
-              onPress={() => console.log("Ride Now")}
+              onPress={() => navigation.navigate("MapDirectionScreen")}
             >
               Ride Now
             </Text>
@@ -72,11 +98,17 @@ const NavFavourites = () => {
 
       {/* Modal */}
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
-        <View style={tw`m-4 p-4 bg-white rounded-sm`}>
+        <View style={tw`m-4 p-4 bg-yellow-400 rounded-sm`}>
           <View style={tw`flex-row justify-between`}>
             <Text style={tw`text-lg text-gray-900`}>Select Payment Method</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={tw`text-lg`}>X</Text>
+              <Icon
+                name="close-circle-outline"
+                type="ionicon"
+                color="black"
+                size={32}
+              />
+              {/*<Text style={tw`text-lg`}>X</Text>*/}
             </TouchableOpacity>
           </View>
           <Text style={tw`text-sm text-gray-900 font-semibold`}>
@@ -88,6 +120,7 @@ const NavFavourites = () => {
             radioButtons={radioButtons}
             onPress={setSelectedId}
             selectedId={selectedId}
+            style={tw`flex-row justify-start`}
           />
 
           {/* Promo code entry */}
@@ -104,10 +137,10 @@ const NavFavourites = () => {
           {/* Confirm button */}
           <View style={tw`pt-2`}>
             <TouchableOpacity
-              style={tw`bg-yellow-400 p-2 rounded-sm justify-center items-center`}
+              style={tw`bg-gray-900 p-2 rounded-sm justify-center items-center`}
               onPress={handleConfirm}
             >
-              <Text style={tw`font-bold text-gray-900 text-lg`}>Confirm</Text>
+              <Text style={tw`font-bold text-white text-lg`}>Confirm</Text>
             </TouchableOpacity>
           </View>
         </View>
