@@ -11,6 +11,15 @@ import {
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 
+import { db } from "../firebaseConfig";
+// import { auth } from "../firebaseConfig";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import firebase from "firebase/compat/app";
+
 const SignUpScreen = () => {
   const generateRandomCode = () => {
     const min = 1000; // Minimum 4-digit number
@@ -27,11 +36,46 @@ const SignUpScreen = () => {
   };
 
   const handleSignInWithGoogle = () => {
-    // Handle sign in with Google logic
+    // console.log("Sin Up Initiated");
+
+    const auth = getAuth;
+    const provider = new GoogleAuthProvider();
+
+    const email = "arthurkabera@gmail.com";
+    const password = "N0p4$$w0rd*";
+
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Signed in
+        var user = userCredential.user;
+        // ...
+        console.log("User: " + user);
+      })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // ..
+
+        console.log("Error: " + errorMessage);
+      });
   };
 
   const handleSignInWithFacebook = () => {
     // Handle sign in with Facebook logic
+    db.collection("cities")
+      .where("capital", "==", false)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          console.log(doc.id, " => ", doc.data());
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
   };
 
   const handleTermsAndConditions = () => {
