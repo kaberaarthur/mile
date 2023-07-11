@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -22,17 +22,49 @@ import firebase from "firebase/compat/app";
 
 const SignUpScreen = () => {
   const generateRandomCode = () => {
-    const min = 1000; // Minimum 4-digit number
-    const max = 9999; // Maximum 4-digit number
+    const min = 100000; // Minimum 4-digit number
+    const max = 999999; // Maximum 4-digit number
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const handleSignIn = () => {
+    function getCurrentTimestamp() {
+      return Date.now();
+    }
     const expectedCode = generateRandomCode();
+
+    // Check if Phone Number is empty
+    if (phoneNumber) {
+      db.collection("riders")
+        .doc()
+        .set({
+          dateRegistered: getCurrentTimestamp(),
+          email: "",
+          name: "",
+          language: "en",
+          phone: phoneNumber,
+          authID: "",
+          otpDate: getCurrentTimestamp(),
+          otpCode: expectedCode,
+        })
+        .then(() => {
+          console.log("Document successfully written!");
+
+          // Write the Code to send the OTP Here
+        })
+        .catch((error) => {
+          console.error("Error writing document: ", error);
+        });
+
+      /*
     navigation.navigate("ConfirmCodeScreen", {
       phoneNumber: phoneNumber,
       expectedCode: expectedCode,
     });
+    */
+    }
   };
 
   const handleSignInWithGoogle = () => {
@@ -41,7 +73,7 @@ const SignUpScreen = () => {
     const auth = getAuth;
     const provider = new GoogleAuthProvider();
 
-    const email = "arthurkabera@gmail.com";
+    const email = "+254790485731";
     const password = "N0p4$$w0rd*";
 
     firebase
@@ -64,8 +96,7 @@ const SignUpScreen = () => {
 
   const handleSignInWithFacebook = () => {
     // Handle sign in with Facebook logic
-    db.collection("cities")
-      .where("capital", "==", false)
+    db.collection("riders")
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
@@ -86,12 +117,13 @@ const SignUpScreen = () => {
     <SafeAreaView style={tw`flex-1 justify-center items-center`}>
       <View style={tw`w-4/5`}>
         <Text style={tw`text-2xl font-bold text-center`}>
-          Enter your number
+          Enter your Phone Number
         </Text>
         <View style={tw`border border-black rounded-sm mt-2`}>
           <TextInput
             style={tw`w-full px-4 py-2`}
             placeholder="+254 7** *** ***"
+            onChangeText={(text) => setPhoneNumber(text)} // Update the state variable when the input changes
           />
         </View>
         <TouchableOpacity
@@ -99,25 +131,6 @@ const SignUpScreen = () => {
           onPress={handleSignIn}
         >
           <Text style={tw`text-black text-lg text-center`}>Sign in</Text>
-        </TouchableOpacity>
-        <View style={tw`flex-row items-center mt-4`}>
-          <View style={tw`flex-grow h-px bg-gray-400 w-1/3`} />
-          <Text style={tw`text-gray-400 mx-2`}>OR</Text>
-          <View style={tw`flex-grow h-px bg-gray-400 w-1/3`} />
-        </View>
-        <TouchableOpacity
-          style={tw`flex-row items-center py-2 px-4 border border-black rounded-sm mt-4`}
-          onPress={handleSignInWithGoogle}
-        >
-          <Icon name="google" type="font-awesome" color="#DB4437" />
-          <Text style={tw`ml-2 text-lg`}>Sign in with Google</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={tw`flex-row items-center py-2 px-4 border border-black rounded-sm mt-2`}
-          onPress={handleSignInWithFacebook}
-        >
-          <Icon name="facebook-square" type="font-awesome" color="#3b5998" />
-          <Text style={tw`ml-2 text-lg`}>Sign in with Facebook</Text>
         </TouchableOpacity>
       </View>
       <View style={tw`p-4 absolute bottom-0`}>
