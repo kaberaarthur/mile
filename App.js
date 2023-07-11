@@ -5,6 +5,7 @@ import { store } from "./store";
 
 import HomeScreen from "./screens/HomeScreen";
 import SignUpScreen from "./screens/SignUpScreen";
+import ConfirmCodeScreen from "./screens/ConfirmCodeScreen";
 import MapScreen from "./screens/MapScreen";
 import EatScreen from "./screens/EatScreen";
 import WaitDriverScreen from "./screens/WaitDriverScreen";
@@ -54,6 +55,13 @@ export default function App() {
               <Stack.Screen
                 name="SignUpScreen"
                 component={SignUpScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="ConfirmCodeScreen"
+                component={ConfirmCodeScreen}
                 options={{
                   headerShown: false,
                 }}

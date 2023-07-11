@@ -37,17 +37,17 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
             containerStyle={tw`bg-black p-2 rounded-full`}
           />
         </TouchableOpacity>
-        <Text style={tw`text-xl ml-4 font-semibold`}>Enter 4 digit code</Text>
+        <Text style={tw`text-xl ml-4 font-semibold`}>Enter 6 digit code</Text>
       </View>
       <Text style={tw`text-lg mb-2`}>
-        Enter the 4 digit code sent to {phoneNumber}.
+        Enter the 6 digit code sent to {phoneNumber}.
       </Text>
       <View style={tw`border border-black rounded-sm px-4 py-2 mb-2`}>
         <TextInput
           style={tw`w-full text-lg`}
           placeholder="Enter code"
           keyboardType="numeric"
-          maxLength={4}
+          maxLength={6}
           value={code}
           onChangeText={setCode}
           onFocus={() => setIsValidCode(true)}

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
+import { useNavigation } from "@react-navigation/native";
 
 import { db } from "../firebaseConfig";
 // import { auth } from "../firebaseConfig";
@@ -21,6 +22,8 @@ import {
 import firebase from "firebase/compat/app";
 
 const SignUpScreen = () => {
+  const navigation = useNavigation();
+
   const generateRandomCode = () => {
     const min = 100000; // Minimum 4-digit number
     const max = 999999; // Maximum 4-digit number
@@ -58,12 +61,11 @@ const SignUpScreen = () => {
           console.error("Error writing document: ", error);
         });
 
-      /*
-    navigation.navigate("ConfirmCodeScreen", {
-      phoneNumber: phoneNumber,
-      expectedCode: expectedCode,
-    });
-    */
+      // Navigate to Confirm Code Screen
+      navigation.navigate("ConfirmCodeScreen", {
+        phoneNumber: phoneNumber,
+        expectedCode: expectedCode,
+      });
     }
   };
 
