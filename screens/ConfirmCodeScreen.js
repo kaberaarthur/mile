@@ -11,7 +11,12 @@ import tw from "tailwind-react-native-classnames";
 
 import { db, auth } from "../firebaseConfig";
 
+import { useDispatch } from "react-redux";
+import { setUser } from "../slices/userSlice";
+
 const ConfirmCodeScreen = ({ navigation, route }) => {
+  const dispatch = useDispatch();
+
   const { phoneNumber, expectedCode } = route.params;
   const [code, setCode] = useState("");
   const [isValidCode, setIsValidCode] = useState(true);
@@ -67,7 +72,8 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
           var user = userCredential.user;
           console.log("USER ID: " + user.uid);
 
-          // Update the Driver Slice
+          // Dispatch to User Store
+          dispatch(setUser(profileDocuments));
 
           navigation.navigate("HomeScreen");
         })

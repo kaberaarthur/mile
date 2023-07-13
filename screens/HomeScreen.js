@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,17 +11,26 @@ import tw from "tailwind-react-native-classnames";
 import NavOptions from "../components/NavOptions";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { GOOGLE_MAPS_APIKEY } from "@env";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setDestination, setOrigin } from "../slices/navSlice";
 import NavFavourites from "../components/NavFavourites";
 import HomeOptions from "../components/HomeOptions";
 navigator.geolocation = require("react-native-geolocation-service");
+
+import { selectUser } from "../slices/userSlice";
 
 // Current Location - Pending Issue
 // Check React Native Maps Documentation
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+    }
+  }, [user]);
 
   return (
     <SafeAreaView style={[tw`bg-white h-full`]}>
