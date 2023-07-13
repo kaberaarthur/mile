@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,88 @@ import {
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 
+import { db, auth } from "../firebaseConfig";
+
 const ConfirmCodeScreen = ({ navigation, route }) => {
   const { phoneNumber, expectedCode } = route.params;
   const [code, setCode] = useState("");
   const [isValidCode, setIsValidCode] = useState(true);
+  const [profileDocuments, setProfileDocuments] = useState("");
+  const [profileID, setProfileID] = useState("");
+  const [updateProfile, setUpdateProfile] = useState("");
 
   const handleSignIn = () => {
-    if (code === expectedCode.toString()) {
+    const authIDSArray = [];
+
+    console.log(phoneNumber);
+    // Check if authID exists for the given phone number
+    const personRef = db
+      .collection("riders")
+      .where("phone", "==", phoneNumber)
+      .where("authID", "!=", ""); // Check for non-empty authID field
+
+    personRef
+      .get()
+      .then((querySnapshot) => {
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+
+            setProfileID(doc.id);
+            setProfileDocuments(doc.data());
+          });
+        } else {
+          console.log("No Documents Found/");
+          setUpdateProfile(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Error querying documents:", error);
+      });
+  };
+
+  useEffect(() => {
+    // Generate the Password
+    if (profileID && profileDocuments) {
+      console.log("Profile ID: " + profileID);
+      console.log("Profile Documents: " + profileDocuments["email"]);
+
+      // Sign In With Email and Password
+      auth
+        .signInWithEmailAndPassword(
+          profileDocuments["email"],
+          profileDocuments["password"]
+        )
+        .then((userCredential) => {
+          // Signed in
+          var user = userCredential.user;
+          console.log("USER ID: " + user.uid);
+
+          // Update the Driver Slice
+
+          navigation.navigate("HomeScreen");
+        })
+        .catch((error) => {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+
+          console.log("Error Occurred Signing In User");
+        });
+    }
+  }, [profileID, profileDocuments]);
+
+  useEffect(() => {
+    // Generate the Password
+    if (updateProfile) {
+      console.log("Profile to Get Updated");
+
       navigation.navigate("UpdateProfileScreen", {
         phoneNumber: phoneNumber,
         expectedCode: expectedCode,
       });
-    } else {
-      setIsValidCode(false);
     }
-  };
+  }, [updateProfile]);
 
   const handleResendCode = () => {
     // Handle resend code logic
