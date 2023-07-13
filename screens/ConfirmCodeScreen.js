@@ -16,7 +16,10 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
 
   const handleSignIn = () => {
     if (code === expectedCode.toString()) {
-      navigation.navigate("HomeScreen");
+      navigation.navigate("UpdateProfileScreen", {
+        phoneNumber: phoneNumber,
+        expectedCode: expectedCode,
+      });
     } else {
       setIsValidCode(false);
     }
@@ -27,7 +30,7 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 p-4`}>
+    <SafeAreaView style={tw`flex-1 px-4 pt-10`}>
       <View style={tw`flex-row items-center mb-5`}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon

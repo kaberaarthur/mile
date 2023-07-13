@@ -51,6 +51,7 @@ const SignUpScreen = () => {
           authID: "",
           otpDate: getCurrentTimestamp(),
           otpCode: expectedCode,
+          password: "",
         })
         .then(() => {
           console.log("Document successfully written!");
