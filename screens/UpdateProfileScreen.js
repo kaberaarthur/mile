@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   const [riderProfileID, setRiderProfileID] = useState(0);
   const [updatedProfile, setUpdatedProfile] = useState(0);
   const [authID, setAuthID] = useState(0);
+  const [generatedPassword, setGeneratedPassword] = useState(0);
 
   // Generate a Random Password
   function generatePassword() {
@@ -78,109 +79,79 @@ const UpdateProfileScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleSubmit = () => {
-    // Manually create the User Profile Using Email and Password
-    console.log(phoneNumber);
+  useEffect(() => {
+    // Generate the Password
+    setGeneratedPassword(generatePassword());
+  }, []);
 
-    var riderRef = db.collection("riders").where("phone", "==", phoneNumber);
-    const riderIDS = [];
+  useEffect(() => {
+    console.log("Generated Password: " + generatedPassword);
+  }, [generatedPassword]);
 
-    riderRef
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          riderIDS.push(doc.id);
-          setRiderProfileID(riderIDS["0"]);
-        });
-        console.log(riderProfileID);
-      })
-      .catch((error) => {
-        console.log("Error getting documents: ", error);
+  const handleSubmit = async () => {
+    try {
+      const riderRef = db
+        .collection("riders")
+        .where("phone", "==", phoneNumber);
+      const querySnapshot = await riderRef.get();
+      const riderIDS = [];
+
+      querySnapshot.forEach((doc) => {
+        riderIDS.push(doc.id);
       });
 
-    // Update the Rider Profile with New Data
-    if (riderProfileID) {
+      setRiderProfileID(riderIDS[0]);
+      console.log(riderProfileID);
+    } catch (error) {
+      console.log("Error getting documents: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (riderProfileID && generatedPassword) {
+      auth
+        .createUserWithEmailAndPassword(riderEmail, generatedPassword)
+        .then((userCredential) => {
+          var user = userCredential.user;
+          console.log("New User: " + user.uid);
+          setAuthID(user.uid);
+        })
+        .catch((error) => {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log("Error Creating User: " + errorMessage);
+        });
+    }
+  }, [riderProfileID, generatedPassword]); // Run when both riderProfileID and generatedPassword change
+
+  // Check if AuthID is Set
+  useEffect(() => {
+    if (authID) {
+      console.log("Generated AuthID: " + authID);
+    }
+  }, [authID]);
+
+  // Update the User Profile Document
+  useEffect(() => {
+    if (authID) {
+      // Call the function that needs the updated riderProfileID
       var theRiderRef = db.collection("riders").doc(riderProfileID);
 
       theRiderRef
         .update({
           email: riderEmail,
           name: riderName,
-          password: generatePassword(),
+          password: generatedPassword,
+          authID: authID,
         })
         .then(() => {
           console.log("Rider Profile Updated Now!");
         })
-        .then(() => {
-          // Get Peofile Data
-          console.log("Rider ID: " + riderProfileID);
-
-          var docRef = db.collection("riders").doc(riderProfileID);
-
-          docRef
-            .get()
-            .then((doc) => {
-              if (doc.exists) {
-                console.log("New Rider Data:", doc.data());
-                setUpdatedProfile(doc.data());
-              } else {
-                // doc.data() will be undefined in this case
-                console.log("No such document!");
-              }
-            })
-            .then(() => {
-              // Create a User With Email and Password
-              console.log("Start Create User");
-              console.log(
-                updatedProfile["email"] + " " + updatedProfile["password"]
-              );
-              auth
-                .createUserWithEmailAndPassword(
-                  updatedProfile["email"],
-                  updatedProfile["password"]
-                )
-                .then((userCredential) => {
-                  // Signed in
-                  var user = userCredential.user;
-                  // ...
-                  console.log("New User: " + user.uid);
-                  setAuthID(user.uid);
-                })
-                .then(() => {
-                  // Update the User Profile + Store with User Data
-                  var theRiderRef = db.collection("riders").doc(riderProfileID);
-
-                  theRiderRef
-                    .update({
-                      authID: authID,
-                    })
-                    .then(() => {
-                      console.log("AuthID has been added!");
-                    })
-                    .catch((error) => {
-                      console.log("Error Adding AuthID:", error);
-                    });
-                })
-                .catch((error) => {
-                  var errorCode = error.code;
-                  var errorMessage = error.message;
-                  // ..
-
-                  console.log("Error Creating User: " + errorMessage);
-                });
-            })
-            .catch((error) => {
-              console.log("Error getting document:", error);
-            });
-        })
         .catch((error) => {
-          // The document probably doesn't exist.
-          console.error("Error updating document: ", error);
+          console.log("Error getting document:", error);
         });
-    } else {
-      console.log("Did not Update Profile");
     }
-  };
+  }, [authID]);
 
   return (
     <SafeAreaView style={tw`flex-1 px-4 pt-10`}>
