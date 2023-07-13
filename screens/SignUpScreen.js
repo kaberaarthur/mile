@@ -41,25 +41,53 @@ const SignUpScreen = () => {
     // Check if Phone Number is empty
     if (phoneNumber) {
       db.collection("riders")
-        .doc()
-        .set({
-          dateRegistered: getCurrentTimestamp(),
-          email: "",
-          name: "",
-          language: "en",
-          phone: phoneNumber,
-          authID: "",
-          otpDate: getCurrentTimestamp(),
-          otpCode: expectedCode,
-          password: "",
-        })
-        .then(() => {
-          console.log("Document successfully written!");
+        .where("phone", "==", phoneNumber)
+        .get()
+        .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            // No existing document found, proceed with creating a new one
+            db.collection("riders")
+              .doc()
+              .set({
+                dateRegistered: getCurrentTimestamp(),
+                email: "",
+                name: "",
+                language: "en",
+                phone: phoneNumber,
+                authID: "",
+                otpDate: getCurrentTimestamp(),
+                otpCode: expectedCode,
+                password: "",
+              })
+              .then(() => {
+                console.log("Document successfully written!");
 
-          // Write the Code to send the OTP Here
+                // Write the Code to send the OTP Here
+              })
+              .catch((error) => {
+                console.error("Error writing document: ", error);
+              });
+          } else {
+            // Existing document found, update the otpCode
+            querySnapshot.forEach((doc) => {
+              db.collection("riders")
+                .doc(doc.id)
+                .update({
+                  otpCode: expectedCode,
+                })
+                .then(() => {
+                  console.log("Document successfully updated!");
+
+                  // Write the Code to send the OTP Here
+                })
+                .catch((error) => {
+                  console.error("Error updating document: ", error);
+                });
+            });
+          }
         })
         .catch((error) => {
-          console.error("Error writing document: ", error);
+          console.error("Error querying documents: ", error);
         });
 
       // Navigate to Confirm Code Screen
