@@ -18,11 +18,11 @@ const Greeting = () => {
       let greetingText = "";
 
       if (currentHour >= 5 && currentHour < 12) {
-        greetingText = "Good Morning " + userName;
+        greetingText = "Good Morning ";
       } else if (currentHour >= 12 && currentHour < 18) {
-        greetingText = "Good Afternoon " + userName;
+        greetingText = "Good Afternoon ";
       } else {
-        greetingText = "Good Evening " + userName;
+        greetingText = "Good Evening ";
       }
 
       setGreeting(greetingText);
@@ -34,7 +34,11 @@ const Greeting = () => {
     return () => clearInterval(intervalId); // Clean up the interval on component unmount
   }, []);
 
-  return <Text style={tw`text-center py-5 text-xl`}>{greeting}, Arthur</Text>;
+  return (
+    <Text style={tw`text-center py-5 text-xl`}>
+      {greeting}, {userName}
+    </Text>
+  );
 };
 
 export default Greeting;
