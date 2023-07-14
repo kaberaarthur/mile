@@ -12,6 +12,7 @@ import tw from "tailwind-react-native-classnames";
 import * as ImagePicker from "expo-image-picker";
 
 import { db, auth } from "../firebaseConfig";
+import { setUser } from "../slices/userSlice";
 
 const UpdateProfileScreen = ({ navigation, route }) => {
   const { phoneNumber, expectedCode } = route.params;

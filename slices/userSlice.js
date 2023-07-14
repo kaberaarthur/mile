@@ -11,6 +11,7 @@ const initialState = {
     otpDate: null,
     otpCode: null,
     password: null,
+    signedIn: false,
   },
 };
 

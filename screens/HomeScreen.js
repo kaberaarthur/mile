@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -16,21 +16,75 @@ import { setDestination, setOrigin } from "../slices/navSlice";
 import NavFavourites from "../components/NavFavourites";
 import HomeOptions from "../components/HomeOptions";
 navigator.geolocation = require("react-native-geolocation-service");
+import { useNavigation } from "@react-navigation/native";
 
-import { selectUser } from "../slices/userSlice";
+import { selectUser, setUser } from "../slices/userSlice";
+import { setRide } from "../slices/rideSlice";
+
+import { db, auth } from "../firebaseConfig";
 
 // Current Location - Pending Issue
 // Check React Native Maps Documentation
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
+  const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (loading) {
+      // If still loading, don't do anything.
+      return;
+    }
+
+    if (!user) {
+      console.log("User is not logged in");
+
+      // Redirect to the SignUpScreen
+      navigation.navigate("SignUpScreen");
+    } else {
+      console.log("Current User: ", user);
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return null; // Or return a loading spinner.
+  }
+
+  /*
+  useEffect(() => {
     if (user) {
-      console.log(user);
+      // Fetch Data from firestore and Dispatch it to the Store
+      const personRef = db.collection("riders").where("authID", "!=", user.uid);
+
+      personRef
+        .get()
+        .then((querySnapshot) => {
+          if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+              // Set SignedIn Status as True
+              dispatch(setUser(doc.data()));
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error querying documents:", error);
+        });
     }
   }, [user]);
+  */
 
   return (
     <SafeAreaView style={[tw`bg-white h-full`]}>

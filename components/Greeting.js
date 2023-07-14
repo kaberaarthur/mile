@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Text, View } from "react-native";
 import tw from "tailwind-react-native-classnames";
+import { selectUser } from "../slices/userSlice";
 import { useSelector } from "react-redux";
 
 const Greeting = () => {

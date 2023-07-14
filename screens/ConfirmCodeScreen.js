@@ -75,6 +75,9 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
           // Dispatch to User Store
           dispatch(setUser(profileDocuments));
 
+          // Set SignedIn Status as True
+          // dispatch(setUser({ signedIn: true }));
+
           navigation.navigate("HomeScreen");
         })
         .catch((error) => {
