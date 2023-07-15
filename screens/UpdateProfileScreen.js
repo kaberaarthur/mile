@@ -7,14 +7,21 @@ import {
   TextInput,
   Image,
 } from "react-native";
+import { useDispatch } from "react-redux";
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import * as ImagePicker from "expo-image-picker";
 
+import { useNavigation } from "@react-navigation/native";
+
 import { db, auth } from "../firebaseConfig";
 import { setUser } from "../slices/userSlice";
+import { setPerson } from "../slices/personSlice";
 
 const UpdateProfileScreen = ({ navigation, route }) => {
+  // const navigation = useNavigation();
+  const dispatch = useDispatch();
+
   const { phoneNumber, expectedCode } = route.params;
   const [profilePicture, setProfilePicture] = useState(null);
   const [riderName, setRiderName] = useState("");
@@ -23,6 +30,9 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   const [updatedProfile, setUpdatedProfile] = useState(0);
   const [authID, setAuthID] = useState(0);
   const [generatedPassword, setGeneratedPassword] = useState(0);
+
+  // Check if User Has Been Created
+  const [userCreated, setUserCreated] = useState(false);
 
   // Generate a Random Password
   function generatePassword() {
@@ -125,13 +135,6 @@ const UpdateProfileScreen = ({ navigation, route }) => {
     }
   }, [riderProfileID, generatedPassword]); // Run when both riderProfileID and generatedPassword change
 
-  // Check if AuthID is Set
-  useEffect(() => {
-    if (authID) {
-      console.log("Generated AuthID: " + authID);
-    }
-  }, [authID]);
-
   // Update the User Profile Document
   useEffect(() => {
     if (authID) {
@@ -147,12 +150,47 @@ const UpdateProfileScreen = ({ navigation, route }) => {
         })
         .then(() => {
           console.log("Rider Profile Updated Now!");
+          setUserCreated(true);
         })
         .catch((error) => {
           console.log("Error getting document:", error);
         });
     }
   }, [authID]);
+
+  // Check if AuthID is Set
+  useEffect(() => {
+    if (authID) {
+      console.log("Generated AuthID: " + authID);
+    }
+  }, [authID]);
+
+  useEffect(() => {
+    if (userCreated == true) {
+      // Get the Document Data
+      var docRef = db.collection("riders").doc(riderProfileID);
+
+      docRef
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("The Profile data:", doc.data());
+
+            // Store the Person to the Person Store
+            dispatch(setPerson(doc.data()));
+          } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
+
+      // Navigate to Home Screen
+      navigation.navigate("HomeScreen");
+    }
+  }, [userCreated]);
 
   return (
     <SafeAreaView style={tw`flex-1 px-4 pt-10`}>

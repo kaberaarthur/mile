@@ -66,29 +66,6 @@ const HomeScreen = () => {
     return null; // Or return a loading spinner.
   }
 
-  /*
-  useEffect(() => {
-    if (user) {
-      // Fetch Data from firestore and Dispatch it to the Store
-      const personRef = db.collection("riders").where("authID", "!=", user.uid);
-
-      personRef
-        .get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            querySnapshot.forEach((doc) => {
-              // Set SignedIn Status as True
-              dispatch(setUser(doc.data()));
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error querying documents:", error);
-        });
-    }
-  }, [user]);
-  */
-
   return (
     <SafeAreaView style={[tw`bg-white h-full`]}>
       <View style={[tw`p-5`]}>
