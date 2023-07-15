@@ -10,16 +10,8 @@ const initialState = {
     vehicleId: null,
     vehicleLicensePlate: null,
     rideStatus: null,
-    origin: {
-      latitude: null,
-      longitude: null,
-      description: null,
-    },
-    destination: {
-      latitude: null,
-      longitude: null,
-      description: null,
-    },
+    origin: null,
+    destination: null,
     startTime: null,
     endTime: null,
     distanceTravelled: null,

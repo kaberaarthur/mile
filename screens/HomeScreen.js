@@ -82,10 +82,7 @@ const HomeScreen = () => {
           placeholder="Add a pickup location"
           styles={toInputBoxStyles}
           onPress={(data, details = null) => {
-            /*
-            console.log(details.geometry.location);
-            console.log(data.description);
-            */
+            console.log(person.name);
 
             dispatch(
               setOrigin({
@@ -95,6 +92,16 @@ const HomeScreen = () => {
             );
 
             dispatch(setDestination(null));
+
+            // Dispatch Data to Ride Slice
+            dispatch(
+              setRide({
+                origin: {
+                  location: details.geometry.location,
+                  description: data.description,
+                },
+              })
+            );
           }}
           fetchDetails={true}
           returnKeyType={"search"}

@@ -16,9 +16,14 @@ import NavFavourites from "./NavFavourites";
 import { Icon } from "react-native-elements";
 import Greeting from "./Greeting";
 
+import { setRide, selectRide } from "../slices/rideSlice";
+
 const NavigateCard = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
+
+  const ride = useSelector(selectRide);
+  console.log("Current Origin: ", ride?.origin);
 
   return (
     <SafeAreaView style={tw`bg-white flex-1`}>
@@ -35,6 +40,16 @@ const NavigateCard = () => {
               setDestination({
                 location: details.geometry.location,
                 description: data.description,
+              })
+            );
+
+            // Dispatch Data to Ride Slice
+            dispatch(
+              setRide({
+                destination: {
+                  location: details.geometry.location,
+                  description: data.description,
+                },
               })
             );
 
