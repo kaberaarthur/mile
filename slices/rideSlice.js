@@ -4,7 +4,7 @@ const initialState = {
   ride: {
     rideId: null,
     riderName: null,
-    userId: null,
+    riderId: null,
     driverId: null,
     driverName: null,
     vehicleId: null,
@@ -14,7 +14,7 @@ const initialState = {
     destination: null,
     startTime: null,
     endTime: null,
-    distanceTravelled: null,
+    travelInfo: null,
     fareWithoutDiscount: null,
     discountApplied: null,
     discountAmount: null,

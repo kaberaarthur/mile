@@ -7,10 +7,14 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+
 import MapView, { Marker } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
 import tw from "tailwind-react-native-classnames";
+
+import { setRide, selectRide } from "../slices/rideSlice";
 
 const origin = {
   latitude: -1.2850204,
@@ -34,6 +38,9 @@ const MapDirectionsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [travelMinutes, setTravelMinutes] = useState(null);
   const mapRef = useRef(null);
+
+  const ride = useSelector(selectRide);
+  console.log("Ride Data: ", ride);
 
   useEffect(() => {
     const calculateMinutes = async () => {

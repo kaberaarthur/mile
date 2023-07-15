@@ -85,11 +85,9 @@ const NavFavourites = () => {
         <View style={tw`py-4`}>
           <TouchableOpacity
             style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
+            onPress={() => navigation.navigate("MapDirectionScreen")}
           >
-            <Text
-              style={tw`text-white uppercase font-bold text-lg`}
-              onPress={() => navigation.navigate("MapDirectionScreen")}
-            >
+            <Text style={tw`text-white uppercase font-bold text-lg`}>
               Ride Now
             </Text>
           </TouchableOpacity>

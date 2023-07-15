@@ -10,6 +10,7 @@ import {
   selectOrigin,
   setTravelTimeInformation,
 } from "../slices/navSlice";
+import { setRide, selectRide } from "../slices/rideSlice";
 
 import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
@@ -54,6 +55,12 @@ const Map = () => {
         .then((data) => {
           dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
           console.log(data.rows[0].elements[0]);
+
+          dispatch(
+            setRide({
+              travelInfo: data.rows[0].elements[0],
+            })
+          );
         });
     };
 

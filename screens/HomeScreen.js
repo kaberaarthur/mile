@@ -100,6 +100,9 @@ const HomeScreen = () => {
                   location: details.geometry.location,
                   description: data.description,
                 },
+                riderName: person.name,
+                rideStatus: "1",
+                riderId: person.authID,
               })
             );
           }}
