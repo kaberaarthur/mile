@@ -19,6 +19,7 @@ navigator.geolocation = require("react-native-geolocation-service");
 import { useNavigation } from "@react-navigation/native";
 
 import { selectUser, setUser } from "../slices/userSlice";
+import { selectPerson, setPerson } from "../slices/personSlice";
 import { setRide } from "../slices/rideSlice";
 
 import { db, auth } from "../firebaseConfig";
@@ -28,10 +29,12 @@ import { db, auth } from "../firebaseConfig";
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  // const user = useSelector(selectUser);
+  const person = useSelector(selectPerson);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  // console.log(person);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -55,7 +58,7 @@ const HomeScreen = () => {
       // Redirect to the SignUpScreen
       navigation.navigate("SignUpScreen");
     } else {
-      console.log("Current User: ", user);
+      console.log("Current User: ", person);
     }
   }, [user, loading]);
 

@@ -13,6 +13,7 @@ import { db, auth } from "../firebaseConfig";
 
 import { useDispatch } from "react-redux";
 import { setUser } from "../slices/userSlice";
+import { setPerson } from "../slices/personSlice";
 
 const ConfirmCodeScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -71,6 +72,9 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
           // Signed in
           var user = userCredential.user;
           console.log("USER ID: " + user.uid);
+
+          // Dispatch to Person Store
+          dispatch(setPerson(profileDocuments));
 
           // Dispatch to User Store
           dispatch(setUser(profileDocuments));
