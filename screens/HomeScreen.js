@@ -20,7 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { selectUser, setUser } from "../slices/userSlice";
 import { selectPerson, setPerson } from "../slices/personSlice";
-import { setRide } from "../slices/rideSlice";
+import { setRide, selectRide } from "../slices/rideSlice";
 
 import { db, auth } from "../firebaseConfig";
 
