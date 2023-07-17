@@ -39,8 +39,10 @@ const MapDirectionsScreen = () => {
   const [travelMinutes, setTravelMinutes] = useState(null);
   const mapRef = useRef(null);
 
+  /*
   const ride = useSelector(selectRide);
   console.log("Ride Data: ", ride);
+  */
 
   useEffect(() => {
     const calculateMinutes = async () => {

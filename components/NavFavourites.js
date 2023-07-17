@@ -4,12 +4,17 @@ import { Icon } from "react-native-elements";
 import { Ionicons } from "@expo/vector-icons";
 import RadioGroup from "react-native-radio-buttons-group";
 import tw from "tailwind-react-native-classnames";
+import { useDispatch, useSelector } from "react-redux";
+import { setPerson, selectPerson } from "../slices/personSlice";
 import { useNavigation } from "@react-navigation/native";
 
 const NavFavourites = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+
+  const person = useSelector(selectPerson);
+  console.log("Current Person NF: ", person);
 
   const data = [
     { id: "1", text: "Cash", payment: "Pay when trip ends", icon: "cash" },
@@ -85,7 +90,7 @@ const NavFavourites = () => {
         <View style={tw`py-4`}>
           <TouchableOpacity
             style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
-            onPress={() => navigation.navigate("MapDirectionScreen")}
+            onPress={() => navigation.navigate("RideOptionsCard")}
           >
             <Text style={tw`text-white uppercase font-bold text-lg`}>
               Ride Now

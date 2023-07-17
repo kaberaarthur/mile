@@ -24,6 +24,11 @@ const Map = () => {
   const mapRef = useRef(null);
   const dispatch = useDispatch();
 
+  /*
+  const ride = useSelector(selectRide);
+  console.log("Ride Data Map.js: ", ride);
+  */
+
   useEffect(() => {
     if (!origin || !destination) return;
 
@@ -56,11 +61,13 @@ const Map = () => {
           dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
           console.log(data.rows[0].elements[0]);
 
+          /*
           dispatch(
             setRide({
               travelInfo: data.rows[0].elements[0],
             })
           );
+          */
         });
     };
 

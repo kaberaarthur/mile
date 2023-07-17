@@ -22,8 +22,10 @@ const NavigateCard = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  /*
   const ride = useSelector(selectRide);
-  console.log("Current Origin: ", ride?.origin);
+  console.log("Ride Data NavigateCard.js: ", ride);
+  */
 
   return (
     <SafeAreaView style={tw`bg-white flex-1`}>
@@ -44,6 +46,7 @@ const NavigateCard = () => {
             );
 
             // Dispatch Data to Ride Slice
+            /*
             dispatch(
               setRide({
                 destination: {
@@ -52,6 +55,7 @@ const NavigateCard = () => {
                 },
               })
             );
+            */
 
             // Navigate to Ride Options
             // navigation.navigate("RideOptionsCard");

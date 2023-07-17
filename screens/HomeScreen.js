@@ -94,6 +94,7 @@ const HomeScreen = () => {
             dispatch(setDestination(null));
 
             // Dispatch Data to Ride Slice
+            /*
             dispatch(
               setRide({
                 origin: {
@@ -105,6 +106,7 @@ const HomeScreen = () => {
                 riderId: person.authID,
               })
             );
+            */
           }}
           fetchDetails={true}
           returnKeyType={"search"}

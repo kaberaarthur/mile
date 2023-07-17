@@ -24,6 +24,7 @@ const initialState = {
     userRating: null,
     rideComments: null,
     rideRating: null,
+    taxiType: null,
   },
 };
 
