@@ -17,6 +17,8 @@ import {
   selectDestination,
   selectOrigin,
 } from "../slices/navSlice";
+import { setPerson, selectPerson } from "../slices/personSlice";
+import { db } from "../firebaseConfig";
 
 // Round off Price to Nearest Ten
 function roundToNearestTen(number) {
@@ -56,17 +58,76 @@ const data = [
   },
 ];
 
-const RideOptionsCard = () => {
+const RideOptionsCard = ({ route }) => {
+  const { promoCodeStatus, promoCode, paymentMethod } = route.params;
+
+  console.log(
+    "PromoCode & PromoStatus: " +
+      promoCode +
+      " - " +
+      promoCodeStatus +
+      " - " +
+      paymentMethod.id
+  );
+
   const navigation = useNavigation();
   const [selected, setSelected] = useState(null);
   const travelTimeInformation = useSelector(selectTravelTimeInformation);
   const origin = useSelector(selectOrigin);
   const destination = useSelector(selectDestination);
 
+  const person = useSelector(selectPerson);
+  // console.log("Current Person ROC: ", person);
+
+  // Transform Arrays
+  const originObj = [origin];
+  const destinationObj = [destination];
+  const travelTimeInformationObj = [travelTimeInformation];
+
   const handlePress = () => {
     console.log(".");
     // console.log("Origin:", origin.location);
     // console.log("Destination:", destination.location);
+
+    // Create Ride a Document
+    db.collection("rides")
+      .doc()
+      .set({
+        couponCode: promoCode,
+        couponSet: promoCodeStatus,
+        discountPercent: "",
+        discountSet: false,
+        driverId: "",
+        driverName: "",
+        driverPhone: "",
+        driverRating: "",
+        endTime: "",
+        paymentMethod: paymentMethod.id,
+        rideDestination: destinationObj,
+        rideLevel: "Luxury Ride",
+        rideOrigin: originObj,
+        rideStatus: "1",
+        rideTravelInformation: travelTimeInformationObj,
+        riderName: person.name,
+        riderPhone: person.phone,
+        riderRating: 4.5,
+        startTime: "",
+        totalFareAfterDeduction: "850",
+        totalFareBeforeDeduction: "1000",
+        vehicleBrand: "",
+        vehicleCC: "",
+        vehicleId: "",
+        vehicleLicense: "",
+        vehicleName: "",
+      })
+      .then(() => {
+        console.log("Document successfully written!");
+
+        // Write the Code to send the OTP Here
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
 
     // Navigate to WaitDriverScreen
     navigation.navigate("MapDirectionScreen");

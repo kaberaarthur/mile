@@ -13,8 +13,10 @@ const NavFavourites = () => {
   const [promoCode, setPromoCode] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
 
+  /*
   const person = useSelector(selectPerson);
   console.log("Current Person NF: ", person);
+  */
 
   const data = [
     { id: "1", text: "Cash", payment: "Pay when trip ends", icon: "cash" },
@@ -90,7 +92,15 @@ const NavFavourites = () => {
         <View style={tw`py-4`}>
           <TouchableOpacity
             style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
-            onPress={() => navigation.navigate("RideOptionsCard")}
+            onPress={() =>
+              navigation.navigate("RideOptionsCard", {
+                promoCodeStatus: promoCode ? true : false,
+                promoCode: promoCode,
+                paymentMethod: selectedItem,
+              })
+            }
+
+            // Set the Store
           >
             <Text style={tw`text-white uppercase font-bold text-lg`}>
               Ride Now
