@@ -18,7 +18,9 @@ import {
   selectOrigin,
 } from "../slices/navSlice";
 import { setPerson, selectPerson } from "../slices/personSlice";
+
 import { db } from "../firebaseConfig";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Round off Price to Nearest Ten
 function roundToNearestTen(number) {
@@ -116,6 +118,9 @@ const RideOptionsCard = ({ route }) => {
   const person = useSelector(selectPerson);
   // console.log("Current Person ROC: ", person);
 
+  // Generate TimeStamp
+  const currentTimestamp = new Date();
+
   // Transform Arrays
   const originObj = [origin];
   const destinationObj = [destination];
@@ -151,6 +156,13 @@ const RideOptionsCard = ({ route }) => {
       parseInt(theGrandTotal) - parseInt(deduction)
     );
 
+    // Create a date formatted like - YYYY-MM-DDTHH:mm:ss
+    function createFormattedDate() {
+      const date = new Date();
+      const formattedDate = date.toISOString().slice(0, 19);
+      return formattedDate;
+    }
+
     // Create Ride a Document
     db.collection("rides")
       .doc()
@@ -160,6 +172,7 @@ const RideOptionsCard = ({ route }) => {
         couponType: couponType,
         couponAmount: couponAmount,
         couponPercent: couponPercent,
+        dateCreated: createFormattedDate(),
         discountPercent: "",
         discountSet: false,
         driverId: "",
@@ -167,7 +180,7 @@ const RideOptionsCard = ({ route }) => {
         driverPhone: "",
         driverRating: "",
         endTime: "",
-        paymentMethod: paymentMethod.id,
+        paymentMethod: paymentMethod,
         rideDestination: destinationObj,
         rideLevel: selected.title,
         rideOrigin: originObj,
