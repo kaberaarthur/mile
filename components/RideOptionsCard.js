@@ -59,7 +59,16 @@ const data = [
 ];
 
 const RideOptionsCard = ({ route }) => {
-  const { promoCodeStatus, promoCode, paymentMethod } = route.params;
+  const [couponForm, setCouponForm] = useState("");
+
+  const {
+    promoCodeStatus,
+    promoCode,
+    paymentMethod,
+    couponType,
+    couponAmount,
+    couponPercent,
+  } = route.params;
 
   console.log(
     "PromoCode & PromoStatus: " +
@@ -67,7 +76,9 @@ const RideOptionsCard = ({ route }) => {
       " - " +
       promoCodeStatus +
       " - " +
-      paymentMethod.id
+      paymentMethod.id +
+      " - " +
+      couponType
   );
 
   const navigation = useNavigation();
@@ -85,9 +96,7 @@ const RideOptionsCard = ({ route }) => {
   const travelTimeInformationObj = [travelTimeInformation];
 
   const handlePress = () => {
-    console.log(".");
-    // console.log("Origin:", origin.location);
-    // console.log("Destination:", destination.location);
+    // Check Whether the Coupon Code Exists
 
     // Create Ride a Document
     db.collection("rides")

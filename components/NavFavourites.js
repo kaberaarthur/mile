@@ -7,11 +7,22 @@ import tw from "tailwind-react-native-classnames";
 import { useDispatch, useSelector } from "react-redux";
 import { setPerson, selectPerson } from "../slices/personSlice";
 import { useNavigation } from "@react-navigation/native";
+import { db } from "../firebaseConfig";
+import { ActivityIndicator } from "react-native";
 
 const NavFavourites = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+
+  const [selectedId, setSelectedId] = useState("1");
+
+  const [couponType, setCouponType] = useState("");
+  const [couponAmount, setCouponAmount] = useState("");
+  const [couponPercent, setCouponPercent] = useState("");
+  const [couponStatus, setCouponStatus] = useState({ exists: null });
 
   /*
   const person = useSelector(selectPerson);
@@ -30,7 +41,6 @@ const NavFavourites = () => {
     },
   ];
 
-  const [selectedId, setSelectedId] = useState("1");
   const selectedItem = data.find((item) => item.id === selectedId);
 
   const radioButtons = useMemo(
@@ -53,9 +63,60 @@ const NavFavourites = () => {
     [data]
   );
 
-  const handleConfirm = () => {
+  // Check if Coupon Code Exists
+  const checkPromoCode = async (promoCode) => {
+    setIsLoading(true); // set loading state to true
+
+    const couponQuerySnapshot = await db
+      .collection("coupons")
+      .where("couponTitle", "==", promoCode)
+      .get();
+
+    if (!couponQuerySnapshot.empty) {
+      const couponData = couponQuerySnapshot.docs[0].data();
+
+      console.log("Coupon data:", couponData); // This will print the coupon data
+
+      setCouponType(couponData.couponType);
+      setCouponAmount(couponData.couponAmount);
+      setCouponPercent(couponData.couponPercent);
+
+      setCouponStatus({
+        exists: true,
+        type: couponData.couponType,
+        amount: couponData.couponAmount,
+        percent: couponData.couponPercent,
+      });
+    } else {
+      setCouponType("");
+      setCouponAmount("");
+      setCouponPercent("");
+
+      setCouponStatus({
+        exists: false,
+      });
+      console.log("Coupon data: Does Not Exist");
+    }
+
+    // Delay setting the loading state to false by 5 seconds
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+  };
+
+  const handleConfirm = async () => {
     console.log("Selected payment method:", selectedId);
-    console.log("Promo code entered:", promoCode ? true : false, promoCode);
+
+    await checkPromoCode(promoCode);
+
+    /*
+    console.log(
+      "Promo code entered and if it Exists: ",
+      couponStatus.exists,
+      promoCode
+    );
+    */
+
     setModalVisible(false);
   };
 
@@ -67,7 +128,10 @@ const NavFavourites = () => {
       <View style={tw`py-2 px-6`}>
         <TouchableOpacity
           style={tw`border-gray-700 border rounded-sm p-4 bg-yellow-400`}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            setModalVisible(true);
+            // setIsLoading(true);
+          }}
         >
           <Text style={tw`text-gray-700 text-xs uppercase`}>Paying Via</Text>
           <View style={tw`flex-row justify-between`}>
@@ -90,22 +154,32 @@ const NavFavourites = () => {
         </TouchableOpacity>
 
         <View style={tw`py-4`}>
-          <TouchableOpacity
-            style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
-            onPress={() =>
-              navigation.navigate("RideOptionsCard", {
-                promoCodeStatus: promoCode ? true : false,
-                promoCode: promoCode,
-                paymentMethod: selectedItem,
-              })
-            }
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#030813" />
+          ) : (
+            <TouchableOpacity
+              style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
+              onPress={() => {
+                console.log("Coupon type:", couponType);
 
-            // Set the Store
-          >
-            <Text style={tw`text-white uppercase font-bold text-lg`}>
-              Ride Now
-            </Text>
-          </TouchableOpacity>
+                navigation.navigate("RideOptionsCard", {
+                  promoCodeStatus: couponStatus.exists,
+                  promoCode: couponStatus.exists ? promoCode : null,
+                  paymentMethod: selectedItem,
+
+                  couponType: couponStatus.type ? couponType : null,
+                  couponAmount: couponStatus.amount ? couponAmount : null,
+                  couponPercent: couponStatus.percent ? couponPercent : null,
+                });
+              }}
+
+              // Set the Store
+            >
+              <Text style={tw`text-white uppercase font-bold text-lg`}>
+                Ride Now
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -114,7 +188,12 @@ const NavFavourites = () => {
         <View style={tw`m-4 p-4 bg-yellow-400 rounded-sm`}>
           <View style={tw`flex-row justify-between`}>
             <Text style={tw`text-lg text-gray-900`}>Select Payment Method</Text>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+                // setIsLoading(false);
+              }}
+            >
               <Icon
                 name="close-circle-outline"
                 type="ionicon"
@@ -147,7 +226,7 @@ const NavFavourites = () => {
             />
           </View>
 
-          {/* Confirm button */}
+          {/* Confirm Coupon Button & Check Payment Details */}
           <View style={tw`pt-2`}>
             <TouchableOpacity
               style={tw`bg-gray-900 p-2 rounded-sm justify-center items-center`}
