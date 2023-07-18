@@ -25,6 +25,29 @@ function roundToNearestTen(number) {
   return Math.round(number / 10) * 10;
 }
 
+// Calculate price based on coupon type
+function calculatePrice(price, couponType, couponAmount, couponPercent) {
+  if (couponType === "amount") {
+    return price - couponAmount;
+  } else if (couponType === "percent") {
+    const discount = (price * couponPercent) / 100;
+    return price - discount;
+  } else {
+    return price;
+  }
+}
+
+// Calculate deduction based on coupon type
+function calculateDeduction(price, couponType, couponAmount, couponPercent) {
+  if (couponType === "amount") {
+    return couponAmount;
+  } else if (couponType === "percent") {
+    return (price * couponPercent) / 100;
+  } else {
+    return 0;
+  }
+}
+
 const data = [
   {
     id: "Standard-Ride",
@@ -59,8 +82,6 @@ const data = [
 ];
 
 const RideOptionsCard = ({ route }) => {
-  const [couponForm, setCouponForm] = useState("");
-
   const {
     promoCodeStatus,
     promoCode,
@@ -83,6 +104,11 @@ const RideOptionsCard = ({ route }) => {
 
   const navigation = useNavigation();
   const [selected, setSelected] = useState(null);
+
+  const [totalData, setTotalData] = useState(null);
+  const [deductionData, setDeductionData] = useState(null);
+  const [afterDeductionData, setAfterDeductionData] = useState(null);
+
   const travelTimeInformation = useSelector(selectTravelTimeInformation);
   const origin = useSelector(selectOrigin);
   const destination = useSelector(selectDestination);
@@ -96,7 +122,34 @@ const RideOptionsCard = ({ route }) => {
   const travelTimeInformationObj = [travelTimeInformation];
 
   const handlePress = () => {
-    // Check Whether the Coupon Code Exists
+    // Check type of Coupon if It Exists and Add it Below
+    const deduction = roundToNearestTen(
+      calculateDeduction(
+        30 *
+          parseInt(travelTimeInformation?.duration.text.replace(/ mins/, "")) *
+          selected.multiplier,
+        couponType,
+        couponAmount,
+        couponPercent
+      )
+    );
+
+    // Calculate the Total Price
+    const theGrandTotal = roundToNearestTen(
+      calculatePrice(
+        30 *
+          parseInt(travelTimeInformation?.duration.text.replace(/ mins/, "")) *
+          selected.multiplier,
+        couponType,
+        couponAmount,
+        couponPercent
+      )
+    );
+
+    // Calculate Price if there are Deductions
+    const totalWithDeductions = roundToNearestTen(
+      parseInt(theGrandTotal) - parseInt(deduction)
+    );
 
     // Create Ride a Document
     db.collection("rides")
@@ -104,6 +157,9 @@ const RideOptionsCard = ({ route }) => {
       .set({
         couponCode: promoCode,
         couponSet: promoCodeStatus,
+        couponType: couponType,
+        couponAmount: couponAmount,
+        couponPercent: couponPercent,
         discountPercent: "",
         discountSet: false,
         driverId: "",
@@ -113,16 +169,18 @@ const RideOptionsCard = ({ route }) => {
         endTime: "",
         paymentMethod: paymentMethod.id,
         rideDestination: destinationObj,
-        rideLevel: "Luxury Ride",
+        rideLevel: selected.title,
         rideOrigin: originObj,
         rideStatus: "1",
         rideTravelInformation: travelTimeInformationObj,
+        riderId: person.authID,
         riderName: person.name,
         riderPhone: person.phone,
         riderRating: 4.5,
         startTime: "",
-        totalFareAfterDeduction: "850",
-        totalFareBeforeDeduction: "1000",
+        totalDeduction: deduction,
+        totalClientPays: totalWithDeductions,
+        totalFareBeforeDeduction: theGrandTotal,
         vehicleBrand: "",
         vehicleCC: "",
         vehicleId: "",
@@ -189,11 +247,16 @@ const RideOptionsCard = ({ route }) => {
             <Text style={tw`text-base font-bold`}>
               Kshs.
               {roundToNearestTen(
-                30 *
-                  parseInt(
-                    travelTimeInformation?.duration.text.replace(/ mins/, "")
-                  ) *
-                  multiplier
+                calculatePrice(
+                  30 *
+                    parseInt(
+                      travelTimeInformation?.duration.text.replace(/ mins/, "")
+                    ) *
+                    multiplier,
+                  couponType,
+                  couponAmount,
+                  couponPercent
+                )
               )}
             </Text>
           </TouchableOpacity>
