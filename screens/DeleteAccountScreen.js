@@ -68,8 +68,42 @@ const DeleteAccountScreen = () => {
       .then(() => {
         console.log("Account deletion document successfully written!");
 
-        // Navigate to HomeScreen after successful document creation
-        navigation.navigate("HomeScreen");
+        // Update activeStatus
+        db.collection("riders")
+          .where("authID", "==", person.authID)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              doc.ref
+                .update({
+                  activeUser: false,
+                })
+                .then(() => {
+                  console.log("User status successfully updated!");
+
+                  // Sign out user
+                  auth
+                    .signOut()
+                    .then(() => {
+                      console.log("User Signed Out Successfully");
+                    })
+                    .catch((error) => {
+                      console.log(
+                        "Error Occurred Signing Out User: " + error.message
+                      );
+                    });
+
+                  // Navigate to HomeScreen after successful document creation and user sign out
+                  navigation.navigate("HomeScreen");
+                })
+                .catch((error) => {
+                  console.error("Error updating user status: ", error);
+                });
+            });
+          })
+          .catch((error) => {
+            console.log("Error getting documents: ", error);
+          });
       })
       .catch((error) => {
         console.error(
