@@ -147,6 +147,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
           name: riderName,
           password: generatedPassword,
           authID: authID,
+          activeUser: true,
         })
         .then(() => {
           console.log("Rider Profile Updated Now!");

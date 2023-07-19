@@ -16,7 +16,7 @@ const reasons = [
   { id: 1, text: "I am no longer using my account" },
   { id: 2, text: "The service is too expensive" },
   { id: 3, text: "I want to change my phone number" },
-  { id: 4, text: "I don't understand how the service works" },
+  { id: 4, text: "I don't understand hthe service" },
   { id: 5, text: "Mile is not available in my city" },
   { id: 6, text: "Other" },
 ];
