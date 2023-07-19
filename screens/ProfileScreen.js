@@ -10,6 +10,9 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import tw from "tailwind-react-native-classnames";
 import { Icon } from "react-native-elements";
+import { useDispatch, useSelector } from "react-redux";
+import { selectPerson, setPerson } from "../slices/personSlice";
+import { db, auth } from "../firebaseConfig";
 
 const user = {
   id: "1",
@@ -22,10 +25,20 @@ const user = {
 };
 
 const handleLogout = () => {
-  console.log("Logged Out User");
+  auth
+    .signOut()
+    .then(() => {
+      // Sign-out successful.
+      console.log("User Signed Out Successfully");
+    })
+    .catch((error) => {
+      // An error happened.
+      console.log("Error Occurred Signing Out User: " + error.message);
+    });
 };
 
 const ProfileScreen = () => {
+  const person = useSelector(selectPerson);
   const navigation = useNavigation();
 
   return (
@@ -56,43 +69,14 @@ const ProfileScreen = () => {
           ]}
         />
         <Text style={tw`text-center text-2xl font-bold text-gray-800`}>
-          {user.name}
+          {person.name}
         </Text>
         <Text style={tw`text-center text-base text-gray-600`}>
-          {user.phone}
+          {person.phone}
         </Text>
         <Text style={tw`text-center text-base text-gray-600`}>
-          {user.email}
+          {person.email}
         </Text>
-      </View>
-
-      <View style={tw`my-5 border-b border-gray-500`} />
-      <View style={[tw`px-5`]}>
-        <Text style={tw`text-sm font-bold text-gray-800`}>
-          Favorite locations
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("EnterHomeLocationScreen")}
-        >
-          <View
-            style={[tw`flex-row items-center py-4 border-b border-gray-100`]}
-          >
-            <Icon type="ionicon" name="home-outline" color="#9ca3af" />
-            <Text style={tw`ml-2 text-gray-400 text-lg`}>
-              Enter home location
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("EnterWorkLocationScreen")}
-        >
-          <View style={[tw`flex-row items-center py-4`]}>
-            <Icon type="ionicon" name="briefcase-outline" color="#9ca3af" />
-            <Text style={tw`ml-2 text-gray-400 text-lg`}>
-              Enter work location
-            </Text>
-          </View>
-        </TouchableOpacity>
       </View>
 
       <View style={tw`my-5 border-b border-gray-500`} />

@@ -10,6 +10,9 @@ import {
 import tw from "tailwind-react-native-classnames";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { selectPerson, setPerson } from "../slices/personSlice";
+import { db, auth } from "../firebaseConfig";
 
 const user = {
   id: "1",
@@ -22,22 +25,48 @@ const user = {
 };
 
 const EditProfileScreen = () => {
+  const person = useSelector(selectPerson);
   const navigation = useNavigation();
-  const [email, setEmail] = useState(user.email);
-  const [name, setName] = useState(user.name);
+  const [userEmail, setEmail] = useState(person.email);
+  const [userName, setName] = useState(person.name);
+
+  const dispatch = useDispatch();
 
   const updateProfile = () => {
-    const updatedEmail = email.trim();
-    const updatedName = name.trim();
+    const updatedEmail = userEmail.trim();
+    const updatedName = userName.trim();
 
     if (updatedEmail || updatedName) {
-      console.log("Updated details:");
-      if (updatedEmail) {
-        console.log(`Email: ${updatedEmail}`);
-      }
-      if (updatedName) {
-        console.log(`Name: ${updatedName}`);
-      }
+      db.collection("riders")
+        .where("authID", "==", person.authID)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            doc.ref
+              .update({
+                email: updatedEmail,
+                name: updatedName,
+              })
+              .then(() => {
+                console.log("Profile successfully updated!");
+                // Dispatch an action to update the person state in Redux store
+                dispatch(
+                  setPerson({
+                    ...person, // take all existing fields from person
+                    email: updatedEmail, // override the email field
+                    name: updatedName, // override the name field
+                  })
+                );
+                navigation.goBack();
+              })
+              .catch((error) => {
+                console.error("Error updating document: ", error);
+              });
+          });
+        })
+        .catch((error) => {
+          console.log("Error getting documents: ", error);
+        });
     }
   };
 
@@ -58,7 +87,7 @@ const EditProfileScreen = () => {
         <Text style={tw`text-lg text-gray-600 mt-4`}>Name</Text>
         <TextInput
           style={tw`border border-gray-300 mt-2 p-2 rounded-sm`}
-          value={name}
+          value={userName}
           onChangeText={setName}
         />
       </View>
@@ -66,7 +95,7 @@ const EditProfileScreen = () => {
         <Text style={tw`text-lg text-gray-600 mt-4`}>Email Address</Text>
         <TextInput
           style={tw`border border-gray-300 mt-2 p-2 rounded-sm`}
-          value={email}
+          value={userEmail}
           onChangeText={setEmail}
         />
       </View>
