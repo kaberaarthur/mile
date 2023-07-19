@@ -29,6 +29,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   const [riderProfileID, setRiderProfileID] = useState(0);
   const [updatedProfile, setUpdatedProfile] = useState(0);
   const [authID, setAuthID] = useState(0);
+  const [lastNumber, setLastNumber] = useState(0);
   const [generatedPassword, setGeneratedPassword] = useState(0);
 
   // Check if User Has Been Created
@@ -135,9 +136,52 @@ const UpdateProfileScreen = ({ navigation, route }) => {
     }
   }, [riderProfileID, generatedPassword]); // Run when both riderProfileID and generatedPassword change
 
-  // Update the User Profile Document
+  // Create a combination of two items, day of the Week and Milliseconds
+  const getDayAndTime = () => {
+    // Create a Date object for the current time
+    const now = new Date();
+
+    // Map days of the week to letters
+    const days = ["S", "M", "T", "W", "T", "F", "S"];
+
+    // Get the current day of the week as a letter
+    const dayLetter = days[now.getDay()];
+
+    // Get the current time in milliseconds, convert to string and take the first two digits
+    const timeDigits = String(now.getTime()).substring(0, 2);
+
+    // Return the result
+    return dayLetter + timeDigits;
+  };
+
+  // Get the lastNumber in the lastPartnerCode Collection
+  // The lastNumber will be used in creating the partnerCode
   useEffect(() => {
     if (authID) {
+      db.collection("lastPartnerCode")
+        .doc("sz9CX7al5MgsvGsvaRYM")
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            const newNumberString = (doc.data().lastNumber + 1).toString();
+            const newCode = "MTL" + getDayAndTime() + newNumberString;
+            console.log("Partner Code:", newCode);
+
+            setLastNumber(newCode);
+          } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting lastNumber document:", error);
+        });
+    }
+  }, [authID]);
+
+  // Update the User Profile Document
+  useEffect(() => {
+    if (lastNumber) {
       // Call the function that needs the updated riderProfileID
       var theRiderRef = db.collection("riders").doc(riderProfileID);
 
@@ -148,6 +192,8 @@ const UpdateProfileScreen = ({ navigation, route }) => {
           password: generatedPassword,
           authID: authID,
           activeUser: true,
+          partnerCode: lastNumber,
+          referralCode: "",
         })
         .then(() => {
           console.log("Rider Profile Updated Now!");
@@ -157,7 +203,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
           console.log("Error getting document:", error);
         });
     }
-  }, [authID]);
+  }, [lastNumber]);
 
   // Check if AuthID is Set
   useEffect(() => {

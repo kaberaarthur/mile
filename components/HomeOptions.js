@@ -34,6 +34,15 @@ const data = [
     description: "View your ride history",
     screen: "ActivityScreen",
   },
+
+  // Test Screen
+  {
+    id: "5",
+    icon: "list",
+    title: "Test",
+    description: "Test Activities",
+    screen: "TestScreen",
+  },
 ];
 
 const HomeOptions = () => {

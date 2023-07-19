@@ -32,6 +32,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MapDirectionScreen from "./screens/MapDirectionScreen";
 
+import TestScreen from "./screens/TestScreen";
+
 // 1) Setup Redux - Complete
 
 export default function App() {
@@ -177,6 +179,14 @@ export default function App() {
               <Stack.Screen
                 name="MapDirectionScreen"
                 component={MapDirectionScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+
+              <Stack.Screen
+                name="TestScreen"
+                component={TestScreen}
                 options={{
                   headerShown: false,
                 }}
