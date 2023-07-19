@@ -12,6 +12,9 @@ import tw from "tailwind-react-native-classnames";
 import { useNavigation } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 
+import { useDispatch, useSelector } from "react-redux";
+import { selectPerson, setPerson } from "../slices/personSlice";
+
 const partnerData = {
   id: "1",
   code: "PRT123",
@@ -32,12 +35,13 @@ const partnerData = {
 };
 
 const PartnershipsScreen = () => {
+  const person = useSelector(selectPerson);
   const navigation = useNavigation();
   const totalEarnings = partnerData.earnings.reduce(
     (sum, earning) => sum + earning.total,
     0
   );
-  const partnerLink = `https://mile.ke/partners/${partnerData.code}`;
+  const partnerLink = `https://mile.ke/partners/${person.partnerCode}`;
 
   const copyLinkToClipboard = async () => {
     await Clipboard.setStringAsync(partnerLink);
@@ -48,7 +52,7 @@ const PartnershipsScreen = () => {
   };
 
   const copyCodeToClipboard = async () => {
-    await Clipboard.setStringAsync(partnerData.code);
+    await Clipboard.setStringAsync(person.partnerCode);
     Alert.alert(
       "Code copied",
       "The partner code has been copied to clipboard."
@@ -85,7 +89,7 @@ const PartnershipsScreen = () => {
           <Text style={tw`text-sm text-gray-900`}>Copy Link</Text>
         </TouchableOpacity>
         <Text style={tw`text-sm font-semibold text-gray-900 mt-2`}>
-          Partner Code: {partnerData.code}
+          Partner Code: {person.partnerCode}
         </Text>
         <TouchableOpacity
           style={tw`mt-1 bg-white p-2 rounded`}
