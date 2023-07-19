@@ -12,6 +12,10 @@ import Modal from "react-native-modal";
 import { CheckBox } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 
+import { db, auth } from "../firebaseConfig";
+import { setPerson, selectPerson } from "../slices/personSlice";
+import { useDispatch, useSelector } from "react-redux";
+
 const reasons = [
   { id: 1, text: "I am no longer using my account" },
   { id: 2, text: "The service is too expensive" },
@@ -25,6 +29,16 @@ const DeleteAccountScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [checkedReasons, setCheckedReasons] = useState({});
   const navigation = useNavigation();
+  const person = useSelector(selectPerson);
+
+  // Create a date formatted like - YYYY-MM-DDTHH:mm:ss
+  function createFormattedDate() {
+    const date = new Date();
+    const formattedDate = date.toISOString().slice(0, 19);
+    return formattedDate;
+  }
+
+  let currentDate = new Date();
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -39,6 +53,30 @@ const DeleteAccountScreen = () => {
 
     console.log("Account has been deleted.");
     toggleModal();
+
+    // Change activeUser status to false and create deletion document
+    // Create Deletion
+    db.collection("accountDeletions")
+      .doc(person.authID)
+      .set({
+        authID: person.authID,
+        dateDeleted: currentDate,
+        name: person.name,
+        phone: person.phone,
+        reasons: selectedReasons,
+      })
+      .then(() => {
+        console.log("Account deletion document successfully written!");
+
+        // Navigate to HomeScreen after successful document creation
+        navigation.navigate("HomeScreen");
+      })
+      .catch((error) => {
+        console.error(
+          "Error writing account deletion document: ",
+          error.message
+        );
+      });
 
     navigation.navigate("HomeScreen");
   };
