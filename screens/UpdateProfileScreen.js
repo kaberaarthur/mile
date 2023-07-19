@@ -148,7 +148,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
     const dayLetter = days[now.getDay()];
 
     // Get the current time in milliseconds, convert to string and take the first two digits
-    const timeDigits = String(now.getTime()).substring(0, 2);
+    const timeDigits = Math.floor(Math.random() * 90) + 10;
 
     // Return the result
     return dayLetter + timeDigits;
@@ -158,16 +158,31 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   // The lastNumber will be used in creating the partnerCode
   useEffect(() => {
     if (authID) {
-      db.collection("lastPartnerCode")
-        .doc("sz9CX7al5MgsvGsvaRYM")
+      const docRef = db
+        .collection("lastPartnerCode")
+        .doc("sz9CX7al5MgsvGsvaRYM");
+      docRef
         .get()
         .then((doc) => {
           if (doc.exists) {
-            const newNumberString = (doc.data().lastNumber + 1).toString();
+            const newNumber = doc.data().lastNumber + 1;
+            const newNumberString = newNumber.toString();
             const newCode = "MTL" + getDayAndTime() + newNumberString;
             console.log("Partner Code:", newCode);
 
             setLastNumber(newCode);
+
+            // Updating the lastNumber field in the document
+            docRef
+              .update({
+                lastNumber: newNumber,
+              })
+              .then(() => {
+                console.log("lastNumber successfully updated!");
+              })
+              .catch((error) => {
+                console.error("Error updating lastNumber: ", error);
+              });
           } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
