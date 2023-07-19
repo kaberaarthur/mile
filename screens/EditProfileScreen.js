@@ -91,6 +91,7 @@ const EditProfileScreen = () => {
           onChangeText={setName}
         />
       </View>
+      {/*
       <View>
         <Text style={tw`text-lg text-gray-600 mt-4`}>Email Address</Text>
         <TextInput
@@ -99,6 +100,7 @@ const EditProfileScreen = () => {
           onChangeText={setEmail}
         />
       </View>
+      */}
       <TouchableOpacity
         style={[tw`mt-5 py-3 px-6 rounded-sm items-center`, styles.customColor]}
         onPress={updateProfile}
