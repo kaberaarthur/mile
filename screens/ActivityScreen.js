@@ -19,7 +19,8 @@ const ActivityScreen = () => {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const person = useSelector(selectPerson);
-  const groupedRides = {};
+  // const groupedRides = {};
+  const [groupedRides, setGroupedRides] = useState({});
 
   const [rides, setRides] = useState([]);
 
@@ -33,7 +34,10 @@ const ActivityScreen = () => {
       .where("riderId", "==", person.authID) // Adjust the condition as per your requirement
       .get()
       .then((querySnapshot) => {
-        const ridesData = querySnapshot.docs.map((doc) => doc.data());
+        const ridesData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setRides(ridesData);
       })
       .catch((error) => {
@@ -43,20 +47,23 @@ const ActivityScreen = () => {
 
   // Group the Data in Accordance to Months
   useEffect(() => {
+    let newGroupedRides = {};
     rides.forEach((ride) => {
       const monthYear = new Date(ride.dateCreated).toLocaleString("en-US", {
         month: "short",
         year: "numeric",
       });
 
-      if (!groupedRides[monthYear]) {
-        groupedRides[monthYear] = [];
+      if (!newGroupedRides[monthYear]) {
+        newGroupedRides[monthYear] = [];
       }
 
-      groupedRides[monthYear].push(ride);
+      newGroupedRides[monthYear].push(ride);
 
-      console.log(ride.dateCreated);
+      // console.log(ride.dateCreated);
     });
+
+    setGroupedRides(newGroupedRides); // update the state
   }, [rides]);
 
   useEffect(() => {
@@ -94,7 +101,10 @@ const ActivityScreen = () => {
                     navigation.navigate("RideDetailsScreen", { ride })
                   }
                 >
-                  <View style={tw`flex-row items-center mb-4`} key={ride.id}>
+                  <View
+                    style={tw`flex-row items-center mb-4 bg-white px-5 py-2`}
+                    key={ride.id}
+                  >
                     <View
                       style={[
                         tw`items-center justify-center rounded-full p-2`,
@@ -103,20 +113,32 @@ const ActivityScreen = () => {
                     >
                       <Icon type="ionicon" name="car-outline" color="black" />
                     </View>
-                    <View style={tw`ml-4`}>
-                      <Text style={tw`text-lg text-gray-900 font-semibold`}>
-                        {ride.destination.description.length > 18
-                          ? ride.destination.description.substring(0, 18) +
+                    <View style={tw`ml-4 pt-4`}>
+                      <Text style={tw`text-sm text-gray-900 font-semibold`}>
+                        {ride.rideOrigin[0].description.length > 18
+                          ? ride.rideOrigin[0].description.substring(0, 18) +
                             "..."
-                          : ride.destination.description}
+                          : ride.rideOrigin[0].description}
+                      </Text>
+                      <Text style={tw`text-sm text-gray-900 font-semibold`}>
+                        {ride.rideDestination[0].description.length > 18
+                          ? ride.rideDestination[0].description.substring(
+                              0,
+                              18
+                            ) + "..."
+                          : ride.rideDestination[0].description}
                       </Text>
                       <Text style={tw`text-sm px-2 py-1 rounded-lg`}>
-                        {new Date(ride.endTime).toLocaleString("en-US", {
+                        {
+                          ride.endTime
+                          /*new Date(ride.endTime).toLocaleString("en-US", {
                           day: "2-digit",
                           month: "short",
                           hour: "2-digit",
                           minute: "2-digit",
-                        })}
+                        })
+                      */
+                        }
                       </Text>
                     </View>
                     <Text style={tw`text-lg text-gray-900 ml-auto font-bold`}>
