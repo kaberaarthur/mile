@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,12 +19,59 @@ export default function RideDetails({ route }) {
   const { ride } = route.params;
   const driverFirstName = ride.driverName.split(" ")[0];
   const endTime = new Date(ride.endTime);
+
+  /*
   const formattedDate = endTime.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+  */
+
+  // Convert Date to Human Friendly Date
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+
+    // Get the date and month
+    let formattedDate = date.toLocaleDateString("en-US", options);
+    formattedDate = formattedDate.replace(",", ""); // Remove comma after the day
+
+    // Determine the ordinal suffix
+    const day = date.getDate();
+    let suffix = "th";
+    if (day % 10 === 1 && day !== 11) {
+      suffix = "st";
+    } else if (day % 10 === 2 && day !== 12) {
+      suffix = "nd";
+    } else if (day % 10 === 3 && day !== 13) {
+      suffix = "rd";
+    }
+
+    // Replace the day with the day + suffix
+    formattedDate = formattedDate.replace(
+      new RegExp(day + " "),
+      day + suffix + " "
+    );
+
+    // Get the time in 24-hour format
+    const time =
+      ("0" + date.getHours()).slice(-2) +
+      ":" +
+      ("0" + date.getMinutes()).slice(-2);
+
+    // Combine the date and time
+    return `${formattedDate} at ${time}`;
+  }
+
+  useEffect(() => {
+    console.log("Ride Data: " + JSON.stringify(formatDate(ride.endTime)));
+    console.log(
+      "Longitude Destination: " + ride.rideDestination[0].location["lng"]
+    );
+  }, [ride]);
+
   const [isModalVisible, setModalVisible] = useState(false);
 
   const toggleModal = () => {
@@ -36,8 +83,14 @@ export default function RideDetails({ route }) {
   const onMapLayout = () => {
     mapRef.current.fitToCoordinates(
       [
-        { latitude: ride.origin.lat, longitude: ride.origin.long },
-        { latitude: ride.destination.lat, longitude: ride.destination.long },
+        {
+          latitude: ride.rideOrigin[0].location["lat"],
+          longitude: ride.rideOrigin[0].location["lng"],
+        },
+        {
+          latitude: ride.rideDestination[0].location["lat"],
+          longitude: ride.rideDestination[0].location["lng"],
+        },
       ],
       {
         animated: true,
@@ -48,8 +101,11 @@ export default function RideDetails({ route }) {
 
   return (
     <View style={tw`px-5 py-10`}>
-      <View style={tw`flex-row items-center`}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View
+        style={tw`flex-row items-center`}
+        onPress={() => navigation.navigate("ActivityScreen")}
+      >
+        <TouchableOpacity>
           <Icon
             type="ionicon"
             name="arrow-back-outline"
@@ -60,29 +116,29 @@ export default function RideDetails({ route }) {
       </View>
 
       <Text style={tw`text-lg font-bold mt-5 mb-2`}>
-        Ride with {driverFirstName}
+        Ride with {ride.driverName}
       </Text>
-      <Text style={tw`mb-5`}>{formattedDate}</Text>
+      <Text style={tw`mb-5`}>{formatDate(ride.endTime)}</Text>
 
       <MapView style={styles.mapStyle} ref={mapRef} onLayout={onMapLayout}>
         <MapViewDirections
-          origin={ride.origin.description}
-          destination={ride.destination.description}
+          origin={ride.rideOrigin[0].description}
+          destination={ride.rideDestination[0].description}
           apikey={GOOGLE_MAPS_APIKEY}
           strokeWidth={6}
           strokeColor="#000"
         />
         <Marker
           coordinate={{
-            latitude: ride.origin.lat,
-            longitude: ride.origin.long,
+            latitude: ride.rideOrigin[0].location["lat"],
+            longitude: ride.rideOrigin[0].location["lng"],
           }}
           title="Origin"
         />
         <Marker
           coordinate={{
-            latitude: ride.destination.lat,
-            longitude: ride.destination.long,
+            latitude: ride.rideDestination[0].location["lat"],
+            longitude: ride.rideDestination[0].location["lng"],
           }}
           title="Destination"
         />
@@ -90,10 +146,10 @@ export default function RideDetails({ route }) {
 
       <View style={tw`my-5`}>
         <Text style={tw`font-bold mb-2`}>
-          Origin: {ride.origin.description}
+          Origin: {ride.rideOrigin[0].description}
         </Text>
         <Text style={tw`font-bold mb-2`}>
-          Destination: {ride.destination.description}
+          Destination: {ride.rideDestination[0].description}
         </Text>
       </View>
 
@@ -118,8 +174,8 @@ export default function RideDetails({ route }) {
         <Text style={tw`text-lg font-bold mb-5`}>Payment</Text>
         <View style={tw`flex-row justify-between items-center`}>
           <Icon name="credit-card" size={20} />
-          <Text>{ride.paymentType}</Text>
-          <Text>Kshs. {ride.cost.toFixed(2)}</Text>
+          <Text>{ride.paymentMethod["text"]}</Text>
+          <Text>Kshs. {ride.totalClientPays.toFixed(2)}</Text>
         </View>
       </View>
 
