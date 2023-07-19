@@ -34,21 +34,6 @@ const data = [
     description: "View your ride history",
     screen: "ActivityScreen",
   },
-  // Temporary Item
-  {
-    id: "5",
-    icon: "car",
-    title: "Sign Up",
-    description: "",
-    screen: "SignUpScreen",
-  },
-  {
-    id: "6",
-    icon: "list",
-    title: "Map Directions",
-    description: "",
-    screen: "MapDirectionScreen",
-  },
 ];
 
 const HomeOptions = () => {
