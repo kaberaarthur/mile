@@ -14,6 +14,7 @@ import * as Clipboard from "expo-clipboard";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectPerson, setPerson } from "../slices/personSlice";
+import { selectUser, setUser } from "../slices/userSlice";
 
 const partnerData = {
   id: "1",
@@ -36,12 +37,14 @@ const partnerData = {
 
 const PartnershipsScreen = () => {
   const person = useSelector(selectPerson);
+  const theUser = useSelector((state) => state.user.user);
+
   const navigation = useNavigation();
   const totalEarnings = partnerData.earnings.reduce(
     (sum, earning) => sum + earning.total,
     0
   );
-  const partnerLink = `https://mile.ke/partners/${person.partnerCode}`;
+  const partnerLink = `https://mile.ke/partners/${theUser["partnerCode"]}`;
 
   const copyLinkToClipboard = async () => {
     await Clipboard.setStringAsync(partnerLink);
@@ -89,7 +92,7 @@ const PartnershipsScreen = () => {
           <Text style={tw`text-sm text-gray-900`}>Copy Link</Text>
         </TouchableOpacity>
         <Text style={tw`text-sm font-semibold text-gray-900 mt-2`}>
-          Partner Code: {person.partnerCode}
+          Partner Code: {theUser["partnerCode"]}
         </Text>
         <TouchableOpacity
           style={tw`mt-1 bg-white p-2 rounded`}

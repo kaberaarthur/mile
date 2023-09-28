@@ -79,7 +79,7 @@ const HomeScreen = () => {
 
             const { dateRegistered, otpDate, ...userDataWithoutDates } = data;
 
-            console.log(userDataWithoutDates);
+            console.log("Withour Dates: ", userDataWithoutDates);
 
             // Dispatch the data directly to the store
             dispatch(fetchUserData(userDataWithoutDates));
@@ -93,11 +93,12 @@ const HomeScreen = () => {
     }
   }, [user, loading]);
 
-  const theUser = useSelector((state) => state.user.user);
+  // Inside your component
+  const firstUser = useSelector((state) => state.user.user);
 
-  if (userData) {
+  if (firstUser && Object.keys(firstUser).length > 0) {
     // Data is available, you can use it here
-    console.log("User from the Store: ", userData);
+    console.log("User data from the Redux store:", firstUser);
   } else {
     // Data is still loading or not available
     console.log("Data is still loading or not available");

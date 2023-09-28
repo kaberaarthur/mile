@@ -88,6 +88,11 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
                 // setUser & setPerson
                 setUser(firstDocument);
                 setPerson(firstDocument);
+              })
+              .catch((error) => {
+                // Handle the error here
+                console.log("Authentication error: ", error);
+                // You can display an error message to the user or take other appropriate actions.
               });
           } else {
             console.log("User does not Exist - Register Him");

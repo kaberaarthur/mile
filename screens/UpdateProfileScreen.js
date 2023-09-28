@@ -190,7 +190,6 @@ const UpdateProfileScreen = ({ navigation, route }) => {
             });
         })
         .catch((error) => {
-          var errorCode = error.code;
           var errorMessage = error.message;
           console.log("Error Creating User: " + errorMessage);
         });
