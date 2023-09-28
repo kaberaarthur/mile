@@ -18,8 +18,10 @@ import HomeOptions from "../components/HomeOptions";
 navigator.geolocation = require("react-native-geolocation-service");
 import { useNavigation } from "@react-navigation/native";
 
-import { selectUser, setUser } from "../slices/userSlice";
-import { selectPerson, setPerson } from "../slices/personSlice";
+import { fetchUserData, selectUser } from "../slices/userSlice";
+
+import { setUser } from "../slices/userSlice";
+import { setPerson } from "../slices/personSlice";
 import { setRide, selectRide } from "../slices/rideSlice";
 
 import { db, auth } from "../firebaseConfig";
@@ -29,10 +31,11 @@ import { db, auth } from "../firebaseConfig";
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const person = useSelector(selectUser);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  const [userData, setUserData] = useState([]);
 
   // console.log(person);
 
@@ -58,9 +61,47 @@ const HomeScreen = () => {
       // Redirect to the SignUpScreen
       navigation.navigate("SignUpScreen");
     } else {
-      console.log("Current User: ", person);
+      console.log("Current User Here: ", user.uid);
+
+      // Get the Profile using user.uid
+      // Query for the document with the specified field value
+      db.collection("riders")
+        .where("authID", "==", user.uid)
+        .get()
+        .then((querySnapshot) => {
+          if (!querySnapshot.empty) {
+            // There should be only one matching document, so we access it using .docs[0]
+            const doc = querySnapshot.docs[0];
+            const data = doc.data();
+            // Handle the document data here
+            console.log("Rider Document data:", data);
+            setUserData(data);
+
+            const { dateRegistered, otpDate, ...userDataWithoutDates } = data;
+
+            console.log(userDataWithoutDates);
+
+            // Dispatch the data directly to the store
+            dispatch(fetchUserData(userDataWithoutDates));
+          } else {
+            console.log("No matching documents found");
+          }
+        })
+        .catch((error) => {
+          console.error("Error querying for document: ", error);
+        });
     }
   }, [user, loading]);
+
+  const theUser = useSelector((state) => state.user.user);
+
+  if (userData) {
+    // Data is available, you can use it here
+    console.log("User from the Store: ", userData);
+  } else {
+    // Data is still loading or not available
+    console.log("Data is still loading or not available");
+  }
 
   if (loading) {
     return null; // Or return a loading spinner.
