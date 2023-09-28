@@ -29,7 +29,7 @@ import { db, auth } from "../firebaseConfig";
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const person = useSelector(selectPerson);
+  const person = useSelector(selectUser);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);

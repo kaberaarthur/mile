@@ -20,6 +20,7 @@ import {
 import { setPerson, selectPerson } from "../slices/personSlice";
 
 import { db } from "../firebaseConfig";
+import firebase from "firebase/compat/app";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Round off Price to Nearest Ten
@@ -172,7 +173,7 @@ const RideOptionsCard = ({ route }) => {
         couponType: couponType,
         couponAmount: couponAmount,
         couponPercent: couponPercent,
-        dateCreated: createFormattedDate(),
+        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
         discountPercent: "",
         discountSet: false,
         driverId: "",

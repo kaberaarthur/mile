@@ -29,7 +29,8 @@ const NavigateCard = () => {
 
   return (
     <SafeAreaView style={tw`bg-white flex-1`}>
-      <Greeting />
+      {/*<Greeting />*/}
+      <Text>Good Evening, John</Text>
       <View style={tw`border-t border-gray-200 flex-shrink`}>
         <GooglePlacesAutocomplete
           placeholder="Enter your destination"

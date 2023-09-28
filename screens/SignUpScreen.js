@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,17 +12,31 @@ import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import { useNavigation } from "@react-navigation/native";
 
-import { db } from "../firebaseConfig";
-// import { auth } from "../firebaseConfig";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { db, auth } from "../firebaseConfig";
 import firebase from "firebase/compat/app";
 
 const SignUpScreen = () => {
   const navigation = useNavigation();
+  const [user, setUser] = useState(null);
+  const [riderProfileID, setRiderProfileID] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Redirect to HomeScreen when a user is logged in
+      navigation.navigate("HomeScreen");
+    }
+  }, [user, navigation]);
 
   const generateRandomCode = () => {
     const min = 100000; // Minimum 4-digit number
@@ -32,10 +46,11 @@ const SignUpScreen = () => {
 
   const [phoneNumber, setPhoneNumber] = useState("");
 
+  const sendOTP = () => {
+    console.log("Sending OTP Now");
+  };
+
   const handleSignIn = () => {
-    function getCurrentTimestamp() {
-      return Date.now();
-    }
     const expectedCode = generateRandomCode();
 
     // Check if Phone Number is empty
@@ -46,23 +61,38 @@ const SignUpScreen = () => {
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
             // No existing document found, proceed with creating a new one
-            db.collection("riders")
-              .doc()
+            const newRiderRef = db.collection("riders").doc();
+            newRiderRef
               .set({
-                dateRegistered: getCurrentTimestamp(),
+                dateRegistered: firebase.firestore.FieldValue.serverTimestamp(),
                 email: "",
                 name: "",
                 language: "en",
                 phone: phoneNumber,
                 authID: "",
-                otpDate: getCurrentTimestamp(),
+                otpDate: firebase.firestore.FieldValue.serverTimestamp(),
                 otpCode: expectedCode,
                 password: "",
+                activeUser: false,
               })
               .then(() => {
                 console.log("Document successfully written!");
+                console.log("OTP: " + expectedCode);
 
-                // Write the Code to send the OTP Here
+                // Send the OTP Code
+                sendOTP();
+
+                // New Document ID
+                const newDocumentId = newRiderRef.id;
+                setRiderProfileID(newDocumentId);
+                console.log("Rider Profile ID: " + newDocumentId);
+
+                // Navigate to Confirm Code Screen Here
+                navigation.navigate("ConfirmCodeScreen", {
+                  phoneNumber: phoneNumber,
+                  expectedCode: expectedCode,
+                  theRiderProfileID: newDocumentId,
+                });
               })
               .catch((error) => {
                 console.error("Error writing document: ", error);
@@ -77,8 +107,21 @@ const SignUpScreen = () => {
                 })
                 .then(() => {
                   console.log("Document successfully updated!");
+                  console.log("OTP: " + expectedCode);
 
                   // Write the Code to send the OTP Here
+                  sendOTP();
+
+                  // Rider Profile Document ID
+                  setRiderProfileID(doc.id);
+                  console.log("Rider Profile ID: " + doc.id);
+
+                  // Navigate to Confirm Code Screen Here
+                  navigation.navigate("ConfirmCodeScreen", {
+                    phoneNumber: phoneNumber,
+                    expectedCode: expectedCode,
+                    theRiderProfileID: doc.id,
+                  });
                 })
                 .catch((error) => {
                   console.error("Error updating document: ", error);
@@ -89,55 +132,7 @@ const SignUpScreen = () => {
         .catch((error) => {
           console.error("Error querying documents: ", error);
         });
-
-      // Navigate to Confirm Code Screen
-      navigation.navigate("ConfirmCodeScreen", {
-        phoneNumber: phoneNumber,
-        expectedCode: expectedCode,
-      });
     }
-  };
-
-  const handleSignInWithGoogle = () => {
-    // console.log("Sin Up Initiated");
-
-    const auth = getAuth;
-    const provider = new GoogleAuthProvider();
-
-    const email = "+254790485731";
-    const password = "N0p4$$w0rd*";
-
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        // Signed in
-        var user = userCredential.user;
-        // ...
-        console.log("User: " + user);
-      })
-      .catch((error) => {
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        // ..
-
-        console.log("Error: " + errorMessage);
-      });
-  };
-
-  const handleSignInWithFacebook = () => {
-    // Handle sign in with Facebook logic
-    db.collection("riders")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, " => ", doc.data());
-        });
-      })
-      .catch((error) => {
-        console.log("Error getting documents: ", error);
-      });
   };
 
   const handleTermsAndConditions = () => {

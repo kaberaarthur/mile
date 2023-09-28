@@ -10,103 +10,109 @@ import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 
 import { db, auth } from "../firebaseConfig";
+import firebase from "firebase/compat/app";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+} from "firebase/auth";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../slices/userSlice";
-import { setPerson } from "../slices/personSlice";
+import { setPerson, selectPerson } from "../slices/personSlice";
+
+import { useNavigation } from "@react-navigation/native";
 
 const ConfirmCodeScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
+  const person = useSelector(selectPerson);
 
-  const { phoneNumber, expectedCode } = route.params;
+  const { phoneNumber, expectedCode, theRiderProfileID } = route.params;
   const [code, setCode] = useState("");
   const [isValidCode, setIsValidCode] = useState(true);
-  const [profileDocuments, setProfileDocuments] = useState("");
-  const [profileID, setProfileID] = useState("");
+  const [profile, setProfile] = useState([]);
   const [updateProfile, setUpdateProfile] = useState("");
 
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Format Date Date and Time
+  function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // Month is 0-indexed
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+
+    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+    return formattedDateTime;
+  }
+
+  // Check Whether the Document for Whom OTP is being Confirmed Exists,
+  // Set Profile Data
+
   const handleSignIn = () => {
-    const authIDSArray = [];
+    // First check if OTP is Correct
+    if (expectedCode == code) {
+      console.log("The Code is Correct");
 
-    console.log(phoneNumber);
-    // Check if authID exists for the given phone number
-    const personRef = db
-      .collection("riders")
-      .where("phone", "==", phoneNumber)
-      .where("authID", "!=", ""); // Check for non-empty authID field
+      // Check if authID exists for the given phone number
+      const personRef = db
+        .collection("riders")
+        .where("phone", "==", phoneNumber)
+        .where("activeUser", "==", true);
 
-    personRef
-      .get()
-      .then((querySnapshot) => {
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
-            console.log(doc.id, " => ", doc.data());
+      personRef
+        .get()
+        .then((querySnapshot) => {
+          if (!querySnapshot.empty) {
+            console.log("User Exists - Log him In");
 
-            setProfileID(doc.id);
-            setProfileDocuments(doc.data());
-          });
-        } else {
-          console.log("No Documents Found/");
-          setUpdateProfile(true);
-        }
-      })
-      .catch((error) => {
-        console.error("Error querying documents:", error);
-      });
-  };
+            const firstDocument = querySnapshot.docs[0].data();
+            console.log("Profile Data: ", firstDocument);
 
-  useEffect(() => {
-    // Generate the Password
-    if (profileID && profileDocuments) {
-      console.log("Profile ID: " + profileID);
-      console.log("Profile Documents: " + profileDocuments["email"]);
+            // Sign In With Email and Password
+            auth
+              .signInWithEmailAndPassword(
+                firstDocument["email"],
+                firstDocument["password"]
+              )
+              .then((userCredential) => {
+                // Signed in
+                var user = userCredential.user;
+                console.log("USER ID: " + user.uid);
 
-      // Sign In With Email and Password
-      auth
-        .signInWithEmailAndPassword(
-          profileDocuments["email"],
-          profileDocuments["password"]
-        )
-        .then((userCredential) => {
-          // Signed in
-          var user = userCredential.user;
-          console.log("USER ID: " + user.uid);
+                // setUser & setPerson
+                setUser(firstDocument);
+                setPerson(firstDocument);
+              });
+          } else {
+            console.log("User does not Exist - Register Him");
+            console.log("The New Rider: " + theRiderProfileID);
 
-          // Dispatch to Person Store
-          dispatch(setPerson(profileDocuments));
+            // Send the User to Update their Profile Info
 
-          // Dispatch to User Store
-          dispatch(setUser(profileDocuments));
-
-          // Set SignedIn Status as True
-          // dispatch(setUser({ signedIn: true }));
-
-          navigation.navigate("HomeScreen");
+            navigation.navigate("UpdateProfileScreen", {
+              phoneNumber: phoneNumber,
+              theRiderProfileID: theRiderProfileID,
+            });
+          }
         })
         .catch((error) => {
-          var errorCode = error.code;
-          var errorMessage = error.message;
-
-          console.log("Error Occurred Signing In User");
+          console.error("Error querying documents:", error);
+          setErrorMessage("Error querying documents:", error);
         });
+    } else {
+      setErrorMessage("The Code you Entered is Incorrect");
     }
-  }, [profileID, profileDocuments]);
-
-  useEffect(() => {
-    // Generate the Password
-    if (updateProfile) {
-      console.log("Profile to Get Updated");
-
-      navigation.navigate("UpdateProfileScreen", {
-        phoneNumber: phoneNumber,
-        expectedCode: expectedCode,
-      });
-    }
-  }, [updateProfile]);
+  };
 
   const handleResendCode = () => {
     // Handle resend code logic
+    console.log("Resend User Code");
   };
 
   return (
