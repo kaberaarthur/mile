@@ -24,10 +24,8 @@ const NavFavourites = () => {
   const [couponPercent, setCouponPercent] = useState("");
   const [couponStatus, setCouponStatus] = useState({ exists: null });
 
-  /*
   const person = useSelector(selectPerson);
   console.log("Current Person NF: ", person);
-  */
 
   const data = [
     { id: "1", text: "Cash", payment: "Pay when trip ends", icon: "cash" },
@@ -160,7 +158,7 @@ const NavFavourites = () => {
             <TouchableOpacity
               style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
               onPress={() => {
-                console.log("Coupon type:", couponType);
+                // console.log("Coupon type:", couponType);
 
                 navigation.navigate("RideOptionsCard", {
                   promoCodeStatus: couponStatus.exists,

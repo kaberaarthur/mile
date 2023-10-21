@@ -12,6 +12,8 @@ import tw from "tailwind-react-native-classnames";
 import { Icon } from "react-native-elements";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPerson, setPerson } from "../slices/personSlice";
+import { fetchUserData, selectUser } from "../slices/userSlice";
+
 import { db, auth } from "../firebaseConfig";
 
 const user = {
@@ -41,6 +43,17 @@ const ProfileScreen = () => {
   const person = useSelector(selectPerson);
   const navigation = useNavigation();
 
+  // Inside your component
+  const firstUser = useSelector((state) => state.user.user);
+
+  if (firstUser && Object.keys(firstUser).length > 0) {
+    // Data is available, you can use it here
+    console.log("User data from the Redux store:", firstUser);
+  } else {
+    // Data is still loading or not available
+    console.log("Data is still loading or not available");
+  }
+
   return (
     <SafeAreaView style={[tw`bg-white pt-5 h-full`]}>
       <View style={[tw`pt-5 px-5 flex-row justify-between items-center`]}>
@@ -69,13 +82,13 @@ const ProfileScreen = () => {
           ]}
         />
         <Text style={tw`text-center text-2xl font-bold text-gray-800`}>
-          {person.name}
+          {firstUser["name"]}
         </Text>
         <Text style={tw`text-center text-base text-gray-600`}>
-          {person.phone}
+          {firstUser["phone"]}
         </Text>
         <Text style={tw`text-center text-base text-gray-600`}>
-          {person.email}
+          {firstUser["email"]}
         </Text>
       </View>
 

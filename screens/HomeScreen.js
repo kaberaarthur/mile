@@ -124,7 +124,7 @@ const HomeScreen = () => {
           placeholder="Add a pickup location"
           styles={toInputBoxStyles}
           onPress={(data, details = null) => {
-            console.log(person.name);
+            // console.log(person.name);
 
             dispatch(
               setOrigin({

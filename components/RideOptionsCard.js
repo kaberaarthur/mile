@@ -128,6 +128,8 @@ const RideOptionsCard = ({ route }) => {
   const travelTimeInformationObj = [travelTimeInformation];
 
   const handlePress = () => {
+    console.log("Person Data: ", person);
+
     // Check type of Coupon if It Exists and Add it Below
     const deduction = roundToNearestTen(
       calculateDeduction(

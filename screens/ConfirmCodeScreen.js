@@ -18,8 +18,9 @@ import {
 } from "firebase/auth";
 
 import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../slices/userSlice";
+import { setUser, selectUser } from "../slices/userSlice";
 import { setPerson, selectPerson } from "../slices/personSlice";
+import { ActivityIndicator } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 
@@ -32,6 +33,7 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
   const [isValidCode, setIsValidCode] = useState(true);
   const [profile, setProfile] = useState([]);
   const [updateProfile, setUpdateProfile] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -55,6 +57,7 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
   // Set Profile Data
 
   const handleSignIn = () => {
+    setIsLoading(true);
     // First check if OTP is Correct
     if (expectedCode == code) {
       console.log("The Code is Correct");
@@ -83,11 +86,11 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
               .then((userCredential) => {
                 // Signed in
                 var user = userCredential.user;
-                console.log("USER ID: " + user.uid);
+                console.log("USER DOCUMENT: ", firstDocument);
 
                 // setUser & setPerson
-                setUser(firstDocument);
-                setPerson(firstDocument);
+                dispatch(setPerson(firstDocument));
+                dispatch(setUser(firstDocument));
               })
               .catch((error) => {
                 // Handle the error here
@@ -113,6 +116,8 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
     } else {
       setErrorMessage("The Code you Entered is Incorrect");
     }
+
+    setIsLoading(false);
   };
 
   const handleResendCode = () => {
@@ -150,12 +155,20 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
       {!isValidCode && (
         <Text style={tw`text-red-500 mb-2`}>You entered the wrong code</Text>
       )}
-      <TouchableOpacity
-        style={tw`bg-yellow-500 py-2 px-4 rounded-sm`}
-        onPress={handleSignIn}
-      >
-        <Text style={tw`text-lg font-bold text-center text-black`}>Verify</Text>
-      </TouchableOpacity>
+      {isLoading ? (
+        <TouchableOpacity style={tw`bg-yellow-500 py-2 px-4 rounded-sm`}>
+          <ActivityIndicator size="large" color="#030813" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={tw`bg-yellow-500 py-2 px-4 rounded-sm`}
+          onPress={handleSignIn}
+        >
+          <Text style={tw`text-lg font-bold text-center text-black`}>
+            Verify
+          </Text>
+        </TouchableOpacity>
+      )}
       <TouchableOpacity onPress={handleResendCode}>
         <Text style={tw`text-lg font-bold text-center mt-4`}>Resend Code</Text>
       </TouchableOpacity>

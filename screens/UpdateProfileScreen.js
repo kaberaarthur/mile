@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import * as ImagePicker from "expo-image-picker";
+import { ActivityIndicator } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 
@@ -35,6 +36,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   const [authID, setAuthID] = useState(0);
   const [lastNumber, setLastNumber] = useState(0);
   const [generatedPassword, setGeneratedPassword] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [submitError, setSubmitError] = useState("");
 
@@ -140,6 +142,8 @@ const UpdateProfileScreen = ({ navigation, route }) => {
   // 3. Store the data in the Rider Profile Document
 
   const handleSubmit = async () => {
+    setIsLoading(true);
+
     console.log(
       "Created New Partner Code: " + "MTL" + removePlusSign(phoneNumber)
     );
@@ -197,6 +201,8 @@ const UpdateProfileScreen = ({ navigation, route }) => {
       // Show an error message or prevent submission
       setSubmitError("Enter Correct Email Address and Name");
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -274,13 +280,21 @@ const UpdateProfileScreen = ({ navigation, route }) => {
       </View>
 
       {/* Submit Button */}
-      <TouchableOpacity
-        style={tw`bg-yellow-500 rounded-sm py-4 px-8 justify-center items-center`}
-        onPress={handleSubmit}
-        disabled={!riderName || !isEmailValid(riderEmail)} // Disable based on conditions
-      >
-        <Text style={tw`text-gray-900 text-lg font-semibold`}>Submit</Text>
-      </TouchableOpacity>
+      {isLoading ? (
+        <TouchableOpacity
+          style={tw`bg-yellow-500 rounded-sm py-4 px-8 justify-center items-center`}
+        >
+          <ActivityIndicator size="large" color="#030813" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={tw`bg-yellow-500 rounded-sm py-4 px-8 justify-center items-center`}
+          onPress={handleSubmit}
+          disabled={!riderName || !isEmailValid(riderEmail)} // Disable based on conditions
+        >
+          <Text style={tw`text-gray-900 text-lg font-semibold`}>Submit</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

@@ -11,6 +11,7 @@ import {
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import { useNavigation } from "@react-navigation/native";
+import { ActivityIndicator } from "react-native";
 
 import { db, auth } from "../firebaseConfig";
 import firebase from "firebase/compat/app";
@@ -20,6 +21,7 @@ const SignUpScreen = () => {
   const [user, setUser] = useState(null);
   const [riderProfileID, setRiderProfileID] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -51,6 +53,8 @@ const SignUpScreen = () => {
   };
 
   const handleSignIn = () => {
+    setIsLoading(true);
+
     const expectedCode = generateRandomCode();
 
     // Check if Phone Number is empty
@@ -133,6 +137,8 @@ const SignUpScreen = () => {
           console.error("Error querying documents: ", error);
         });
     }
+
+    setIsLoading(false);
   };
 
   const handleTermsAndConditions = () => {
@@ -152,12 +158,20 @@ const SignUpScreen = () => {
             onChangeText={(text) => setPhoneNumber(text)} // Update the state variable when the input changes
           />
         </View>
-        <TouchableOpacity
-          style={[tw`rounded-sm mt-4 px-4 py-2`, styles.customColor]}
-          onPress={handleSignIn}
-        >
-          <Text style={tw`text-black text-lg text-center`}>Sign in</Text>
-        </TouchableOpacity>
+        {isLoading ? (
+          <TouchableOpacity
+            style={[tw`rounded-sm mt-4 px-4 py-2`, styles.customColor]}
+          >
+            <ActivityIndicator size="large" color="#030813" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[tw`rounded-sm mt-4 px-4 py-2`, styles.customColor]}
+            onPress={handleSignIn}
+          >
+            <Text style={tw`text-black text-lg text-center`}>Sign in</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <View style={tw`p-4 absolute bottom-0`}>
         <Text style={tw`text-sm text-gray-800`}>
