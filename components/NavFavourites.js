@@ -10,6 +10,8 @@ import { useNavigation } from "@react-navigation/native";
 import { db } from "../firebaseConfig";
 import { ActivityIndicator } from "react-native";
 
+import { setRide, selectRide } from "../slices/rideSlice";
+
 const NavFavourites = () => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,8 +104,26 @@ const NavFavourites = () => {
     }, 5000);
   };
 
+  const handleRideNow = () => {
+    navigation.navigate("RideOptionsCard", {
+      promoCodeStatus: couponStatus.exists,
+      promoCode: couponStatus.exists ? promoCode : null,
+      paymentMethod: selectedItem,
+
+      couponType: couponStatus.type ? couponType : null,
+      couponAmount: couponStatus.amount ? couponAmount : null,
+      couponPercent: couponStatus.percent ? couponPercent : null,
+    });
+  };
+
   const handleConfirm = async () => {
     console.log("Selected payment method:", selectedId);
+
+    const person = useSelector(selectPerson);
+    console.log("Current Person ROC: ", person);
+
+    const currentRide = useSelector(selectRide);
+    console.log("Current Person ROC: ", currentRide);
 
     await checkPromoCode(promoCode);
 
@@ -157,19 +177,7 @@ const NavFavourites = () => {
           ) : (
             <TouchableOpacity
               style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
-              onPress={() => {
-                // console.log("Coupon type:", couponType);
-
-                navigation.navigate("RideOptionsCard", {
-                  promoCodeStatus: couponStatus.exists,
-                  promoCode: couponStatus.exists ? promoCode : null,
-                  paymentMethod: selectedItem,
-
-                  couponType: couponStatus.type ? couponType : null,
-                  couponAmount: couponStatus.amount ? couponAmount : null,
-                  couponPercent: couponStatus.percent ? couponPercent : null,
-                });
-              }}
+              onPress={handleRideNow}
 
               // Set the Store
             >

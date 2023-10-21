@@ -11,13 +11,15 @@ import tw from "tailwind-react-native-classnames";
 import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
 import {
   selectTravelTimeInformation,
   selectDestination,
   selectOrigin,
 } from "../slices/navSlice";
 import { setPerson, selectPerson } from "../slices/personSlice";
+import { setRide, selectRide } from "../slices/rideSlice";
 
 import { db } from "../firebaseConfig";
 import firebase from "firebase/compat/app";
@@ -85,6 +87,8 @@ const data = [
 ];
 
 const RideOptionsCard = ({ route }) => {
+  const dispatch = useDispatch();
+
   const {
     promoCodeStatus,
     promoCode,
@@ -117,7 +121,10 @@ const RideOptionsCard = ({ route }) => {
   const destination = useSelector(selectDestination);
 
   const person = useSelector(selectPerson);
-  // console.log("Current Person ROC: ", person);
+  console.log("Current Person ROC: ", person);
+
+  const currentRide = useSelector(selectRide);
+  console.log("Current Person ROC: ", currentRide);
 
   // Generate TimeStamp
   const currentTimestamp = new Date();
@@ -127,8 +134,26 @@ const RideOptionsCard = ({ route }) => {
   const destinationObj = [destination];
   const travelTimeInformationObj = [travelTimeInformation];
 
-  const handlePress = () => {
-    console.log("Person Data: ", person);
+  // Get User Data
+  const firstUser = useSelector((state) => state.user.user);
+
+  if (firstUser && Object.keys(firstUser).length > 0) {
+    // Data is available, you can use it here
+    console.log("User data from the Redux store ROC:", firstUser);
+    const theUser = firstUser;
+  } else {
+    // Data is still loading or not available
+    console.log("Data is still loading or not available");
+  }
+
+  const loading = false;
+
+  if (loading) {
+    return null; // Or return a loading spinner.
+  }
+
+  const handlePress = async () => {
+    console.log("Person Data ROC: ", person);
 
     // Check type of Coupon if It Exists and Add it Below
     const deduction = roundToNearestTen(
@@ -167,50 +192,53 @@ const RideOptionsCard = ({ route }) => {
     }
 
     // Create Ride a Document
-    db.collection("rides")
-      .doc()
-      .set({
-        couponCode: promoCode,
-        couponSet: promoCodeStatus,
-        couponType: couponType,
-        couponAmount: couponAmount,
-        couponPercent: couponPercent,
-        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-        discountPercent: "",
-        discountSet: false,
-        driverId: "",
-        driverName: "",
-        driverPhone: "",
-        driverRating: "",
-        endTime: "",
-        paymentMethod: paymentMethod,
-        rideDestination: destinationObj,
-        rideLevel: selected.title,
-        rideOrigin: originObj,
-        rideStatus: "1",
-        rideTravelInformation: travelTimeInformationObj,
-        riderId: person.authID,
-        riderName: person.name,
-        riderPhone: person.phone,
-        riderRating: 4.5,
-        startTime: "",
-        totalDeduction: deduction,
-        totalClientPays: totalWithDeductions,
-        totalFareBeforeDeduction: theGrandTotal,
-        vehicleBrand: "",
-        vehicleCC: "",
-        vehicleId: "",
-        vehicleLicense: "",
-        vehicleName: "",
-      })
-      .then(() => {
-        console.log("Document successfully written!");
+    const rideDocRef = db.collection("rides").doc();
+    const rideData = {
+      couponCode: promoCode,
+      couponSet: promoCodeStatus,
+      couponType: couponType,
+      couponAmount: couponAmount,
+      couponPercent: couponPercent,
+      dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+      discountPercent: "",
+      discountSet: false,
+      driverId: "",
+      driverName: "",
+      driverPhone: "",
+      driverRating: "",
+      endTime: "",
+      paymentMethod: paymentMethod,
+      rideDestination: destinationObj,
+      rideLevel: selected.title,
+      rideOrigin: originObj,
+      rideStatus: "1",
+      rideTravelInformation: travelTimeInformationObj,
+      riderId: person.authID,
+      riderName: person.name,
+      riderPhone: person.phone,
+      riderRating: 4.5,
+      startTime: "",
+      totalDeduction: deduction,
+      totalClientPays: totalWithDeductions,
+      totalFareBeforeDeduction: theGrandTotal,
+      vehicleBrand: "",
+      vehicleCC: "",
+      vehicleId: "",
+      vehicleLicense: "",
+      vehicleName: "",
+    };
 
-        // Write the Code to send the OTP Here
-      })
-      .catch((error) => {
-        console.error("Error writing document: ", error);
-      });
+    await rideDocRef.set(rideData);
+
+    // Remove the 'dateCreated' property from rideData before dispatching
+    delete rideData.dateCreated;
+
+    console.log("Document successfully written!");
+
+    // Dispatch ride data to the store
+    const rideId = rideDocRef.id;
+    rideData.documentId = rideId; // Add the document ID to your data
+    dispatch(setRide(rideData)); // Dispatch the data to the store
 
     // Navigate to WaitDriverScreen
     navigation.navigate("MapDirectionScreen");
