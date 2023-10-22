@@ -14,18 +14,22 @@ import MapViewDirections from "react-native-maps-directions";
 import { GOOGLE_MAPS_APIKEY } from "@env";
 import tw from "tailwind-react-native-classnames";
 
-import { setRide, selectRide } from "../slices/rideSlice";
+import { selectRide } from "../slices/rideSlice";
+import { db, auth } from "../firebaseConfig";
 
+/*
 const origin = {
   latitude: -1.2850204,
   longitude: 36.8259191,
   description: "Moi Avenue, next to Ambassadeur Hotel, Nairobi, Kenya",
 };
+
 const destination = {
   latitude: -1.2195761,
   longitude: 36.88842440000001,
   description: "QVJQ+58H, Thika Rd, Nairobi, Kenya",
 };
+*/
 
 const driverDetails = {
   name: "Vusi Thembekwayo",
@@ -33,19 +37,64 @@ const driverDetails = {
   profilePicture: require("../assets/profile.jpg"),
 };
 
-const MapDirectionsScreen = () => {
-  const [minutes, setMinutes] = useState(null);
-  const [loading, setLoading] = useState(true);
+const MapDirectionsScreen = ({ route }) => {
   const [travelMinutes, setTravelMinutes] = useState(null);
   const mapRef = useRef(null);
+  const [fetchedDocument, setFetchedDocument] = useState(null); // State to store the fetched document
 
-  /*
-  const ride = useSelector(selectRide);
-  console.log("Ride Data: ", ride);
-  */
+  function cropString(str, maxLength) {
+    if (str.length <= maxLength) {
+      return str;
+    } else {
+      return str.substring(0, maxLength - 3) + "...";
+    }
+  }
+
+  // Access rideData from the navigation params
+  const rideData = route.params.rideData;
+  console.log(
+    "Ride Data from the Route Params:",
+    rideData["rideDestination"][0]["location"]
+  );
+
+  const origin = {
+    latitude: rideData["rideOrigin"][0]["location"]["lat"],
+    longitude: rideData["rideOrigin"][0]["location"]["lng"],
+    description: rideData["rideOrigin"][0]["description"],
+  };
+
+  const destination = {
+    latitude: rideData["rideDestination"][0]["location"]["lat"],
+    longitude: rideData["rideDestination"][0]["location"]["lng"],
+    description: rideData["rideDestination"][0]["description"],
+  };
+
+  // Get the Firestore Document
+  useEffect(() => {
+    // Define a function to fetch the document
+    const fetchRideDocument = async () => {
+      if (rideData && rideData.documentId) {
+        try {
+          const rideDocRef = db.collection("rides").doc(rideData.documentId);
+          const docSnapshot = await rideDocRef.get();
+          if (docSnapshot.exists) {
+            // Document found, store it in the state
+            setFetchedDocument(docSnapshot.data());
+          } else {
+            console.log("Document does not exist");
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+
+    // Call the function to fetch the document
+    fetchRideDocument();
+  }, [rideData]);
 
   useEffect(() => {
-    const calculateMinutes = async () => {
+    async function calculateTravelMinutes() {
       try {
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAPS_APIKEY}`
@@ -58,13 +107,11 @@ const MapDirectionsScreen = () => {
         }
       } catch (error) {
         console.error("Error calculating travel time:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    }
 
-    calculateMinutes();
-  }, []);
+    calculateTravelMinutes();
+  }, [rideData]);
 
   useEffect(() => {
     // Fit map to markers after it's loaded
@@ -83,8 +130,8 @@ const MapDirectionsScreen = () => {
           ref={mapRef}
           style={styles.map}
           initialRegion={{
-            latitude: origin.latitude,
-            longitude: origin.longitude,
+            latitude: rideData["rideOrigin"][0]["location"]["lat"],
+            longitude: rideData["rideOrigin"][0]["location"]["lng"],
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
@@ -101,9 +148,12 @@ const MapDirectionsScreen = () => {
           <Marker coordinate={origin}>
             <TouchableOpacity style={tw`bg-yellow-400 p-2 rounded-sm`}>
               <View>
-                <Text style={tw`text-gray-900 text-xs`}>Driver Location</Text>
+                <Text style={tw`text-gray-900 text-xs`}>Destination</Text>
                 <Text style={tw`text-gray-900 text-sm font-bold`}>
-                  Tabby House, Thika
+                  {cropString(
+                    rideData["rideDestination"][0]["description"],
+                    20
+                  )}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -113,9 +163,9 @@ const MapDirectionsScreen = () => {
           <Marker coordinate={destination}>
             <TouchableOpacity style={tw`bg-yellow-400 p-2 rounded-sm`}>
               <View>
-                <Text style={tw`text-gray-900 text-xs`}>Your Location</Text>
+                <Text style={tw`text-gray-900 text-xs`}>Origin</Text>
                 <Text style={tw`text-gray-900 text-sm font-bold`}>
-                  TRM Drive, Thika Road
+                  {cropString(rideData["rideOrigin"][0]["description"], 20)}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -139,14 +189,11 @@ const MapDirectionsScreen = () => {
             <Text style={tw`text-gray-900 font-semibold`}>
               {driverDetails.car}
             </Text>
-
-            {loading ? (
-              <Text style={tw`text-gray-900`}>Calculating travel time...</Text>
-            ) : (
-              <Text style={tw`text-gray-900 text-lg`}>
-                Driver arriving in {travelMinutes}
-              </Text>
-            )}
+            <Text style={tw`text-gray-900 text-lg`}>
+              {travelMinutes
+                ? `Driver arriving in ${travelMinutes}`
+                : "Calculating travel time..."}
+            </Text>
           </View>
         </View>
       </SafeAreaView>
@@ -180,15 +227,6 @@ const styles = StyleSheet.create({
   driverDetailsContainer: {
     marginLeft: 8,
     paddingLeft: 12,
-  },
-  markerButton: {
-    backgroundColor: "blue",
-    padding: 5,
-    borderRadius: 5,
-  },
-  markerText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });
 

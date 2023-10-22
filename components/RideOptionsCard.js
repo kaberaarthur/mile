@@ -240,8 +240,8 @@ const RideOptionsCard = ({ route }) => {
     rideData.documentId = rideId; // Add the document ID to your data
     dispatch(setRide(rideData)); // Dispatch the data to the store
 
-    // Navigate to WaitDriverScreen
-    navigation.navigate("MapDirectionScreen");
+    // Navigate to WaitDriverScreen and pass rideData as a parameter
+    navigation.navigate("MapDirectionScreen", { rideData });
   };
 
   return (
