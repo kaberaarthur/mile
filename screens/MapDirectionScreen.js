@@ -43,6 +43,11 @@ const MapDirectionsScreen = ({ route }) => {
   const mapRef = useRef(null);
   const [fetchedDocument, setFetchedDocument] = useState(null); // State to store the fetched document
   const [rideStatus, setRideStatus] = useState(null); // State to store the fetched document
+  const [liveRideData, setLiveRideData] = useState(null); // State to store the fetched document
+
+  const [driverName, setDriverName] = useState(null);
+  const [driverPhone, setDriverPhone] = useState(null);
+  const [driverCar, setDriverCar] = useState(null);
 
   function cropString(str, maxLength) {
     if (str.length <= maxLength) {
@@ -108,6 +113,7 @@ const MapDirectionsScreen = ({ route }) => {
           if (doc.exists) {
             // Document found, update the rideStatus in the state
             setRideStatus(doc.data().rideStatus);
+            setLiveRideData(doc.data());
           } else {
             console.log("Document does not exist");
           }
@@ -121,6 +127,22 @@ const MapDirectionsScreen = ({ route }) => {
     // Call the function to subscribe to Firestore updates
     subscribeToFirestore();
   }, [rideData]);
+
+  useEffect(() => {
+    if (liveRideData) {
+      console.log("Live Ride Data: ", liveRideData);
+
+      setDriverCar(
+        liveRideData["vehicleBrand"] +
+          ", " +
+          liveRideData["vehicleName"] +
+          ", " +
+          liveRideData["vehicleLicense"]
+      );
+      setDriverName(liveRideData["driverName"]);
+      setDriverPhone(liveRideData["driverPhone"]);
+    }
+  }, [liveRideData]);
 
   useEffect(() => {
     async function calculateTravelMinutes() {
@@ -205,25 +227,38 @@ const MapDirectionsScreen = ({ route }) => {
       {/* Driver Info */}
       <SafeAreaView style={tw`h-1/4 bg-white p-4`}>
         {rideStatus === "2" && (
-          <View style={[styles.driverInfoContainer, tw``]}>
-            <View style={styles.profileImageContainer}>
-              <Image
-                style={styles.profileImage}
-                source={driverDetails.profilePicture}
-              />
+          <View>
+            <View style={[styles.driverInfoContainer, tw``]}>
+              <View style={styles.profileImageContainer}>
+                <Image
+                  style={styles.profileImage}
+                  source={driverDetails.profilePicture}
+                />
+              </View>
+              <View style={styles.driverDetailsContainer}>
+                <Text style={tw`text-lg text-gray-900 font-bold`}>
+                  {driverName}
+                </Text>
+                <Text style={tw`text-gray-900 font-semibold`}>
+                  {driverPhone}
+                </Text>
+                <Text style={tw`text-gray-900 font-semibold`}>{driverCar}</Text>
+                <Text style={tw`text-gray-900 text-lg`}>
+                  {travelMinutes
+                    ? `Arriving in ${"5 Mins"}`
+                    : "Calculating travel time..."}
+                </Text>
+              </View>
             </View>
-            <View style={styles.driverDetailsContainer}>
-              <Text style={tw`text-lg text-gray-900 font-bold`}>
-                {driverDetails.name}
-              </Text>
-              <Text style={tw`text-gray-900 font-semibold`}>
-                {driverDetails.car}
-              </Text>
-              <Text style={tw`text-gray-900 text-lg`}>
-                {travelMinutes
-                  ? `Driver arriving in ${travelMinutes}`
-                  : "Calculating travel time..."}
-              </Text>
+            <View style={[styles.driverInfoContainer, tw``]}>
+              <TouchableOpacity
+                style={tw`border-gray-700 border rounded-sm py-4 px-10 bg-yellow-400 justify-center items-center w-full`}
+              >
+                <Text style={tw`text-gray-900 uppercase font-bold text-sm`}>
+                  {/* Add a Link to Contact Driver Page */}
+                  Contact Driver
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
