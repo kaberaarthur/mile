@@ -16,6 +16,7 @@ import tw from "tailwind-react-native-classnames";
 
 import { selectRide } from "../slices/rideSlice";
 import { db, auth } from "../firebaseConfig";
+import { ActivityIndicator } from "react-native";
 
 /*
 const origin = {
@@ -41,6 +42,7 @@ const MapDirectionsScreen = ({ route }) => {
   const [travelMinutes, setTravelMinutes] = useState(null);
   const mapRef = useRef(null);
   const [fetchedDocument, setFetchedDocument] = useState(null); // State to store the fetched document
+  const [rideStatus, setRideStatus] = useState(null); // State to store the fetched document
 
   function cropString(str, maxLength) {
     if (str.length <= maxLength) {
@@ -52,10 +54,12 @@ const MapDirectionsScreen = ({ route }) => {
 
   // Access rideData from the navigation params
   const rideData = route.params.rideData;
+  /*
   console.log(
     "Ride Data from the Route Params:",
     rideData["rideDestination"][0]["location"]
   );
+  */
 
   const origin = {
     latitude: rideData["rideOrigin"][0]["location"]["lat"],
@@ -91,6 +95,31 @@ const MapDirectionsScreen = ({ route }) => {
 
     // Call the function to fetch the document
     fetchRideDocument();
+  }, [rideData]);
+
+  useEffect(() => {
+    // Define a function to subscribe to Firestore updates
+    const subscribeToFirestore = () => {
+      if (rideData && rideData.documentId) {
+        const rideDocRef = db.collection("rides").doc(rideData.documentId);
+
+        // Subscribe to Firestore updates
+        const unsubscribe = rideDocRef.onSnapshot((doc) => {
+          if (doc.exists) {
+            // Document found, update the rideStatus in the state
+            setRideStatus(doc.data().rideStatus);
+          } else {
+            console.log("Document does not exist");
+          }
+        });
+
+        // Clean up the listener when the component unmounts
+        return () => unsubscribe();
+      }
+    };
+
+    // Call the function to subscribe to Firestore updates
+    subscribeToFirestore();
   }, [rideData]);
 
   useEffect(() => {
@@ -175,27 +204,42 @@ const MapDirectionsScreen = ({ route }) => {
 
       {/* Driver Info */}
       <SafeAreaView style={tw`h-1/4 bg-white p-4`}>
-        <View style={[styles.driverInfoContainer, tw``]}>
-          <View style={styles.profileImageContainer}>
-            <Image
-              style={styles.profileImage}
-              source={driverDetails.profilePicture}
-            />
+        {rideStatus === "2" && (
+          <View style={[styles.driverInfoContainer, tw``]}>
+            <View style={styles.profileImageContainer}>
+              <Image
+                style={styles.profileImage}
+                source={driverDetails.profilePicture}
+              />
+            </View>
+            <View style={styles.driverDetailsContainer}>
+              <Text style={tw`text-lg text-gray-900 font-bold`}>
+                {driverDetails.name}
+              </Text>
+              <Text style={tw`text-gray-900 font-semibold`}>
+                {driverDetails.car}
+              </Text>
+              <Text style={tw`text-gray-900 text-lg`}>
+                {travelMinutes
+                  ? `Driver arriving in ${travelMinutes}`
+                  : "Calculating travel time..."}
+              </Text>
+            </View>
           </View>
-          <View style={styles.driverDetailsContainer}>
-            <Text style={tw`text-lg text-gray-900 font-bold`}>
-              {driverDetails.name}
-            </Text>
-            <Text style={tw`text-gray-900 font-semibold`}>
-              {driverDetails.car}
-            </Text>
-            <Text style={tw`text-gray-900 text-lg`}>
-              {travelMinutes
-                ? `Driver arriving in ${travelMinutes}`
-                : "Calculating travel time..."}
-            </Text>
+        )}
+
+        {rideStatus === "1" && (
+          <View style={[styles.driverInfoContainer, tw``]}>
+            <TouchableOpacity
+              style={tw`border-gray-700 border rounded-sm py-4 px-10 bg-yellow-400 justify-center items-center w-full`}
+            >
+              <ActivityIndicator size="large" color="#000" />
+              <Text style={tw`text-gray-900 uppercase font-bold text-sm`}>
+                Locating Driver
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        )}
       </SafeAreaView>
     </View>
   );
