@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 
 import MapView, { Marker } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
@@ -39,6 +40,7 @@ const driverDetails = {
 };
 
 const MapDirectionsScreen = ({ route }) => {
+  const navigation = useNavigation();
   const [travelMinutes, setTravelMinutes] = useState(null);
   const mapRef = useRef(null);
   const [fetchedDocument, setFetchedDocument] = useState(null); // State to store the fetched document
@@ -113,7 +115,11 @@ const MapDirectionsScreen = ({ route }) => {
           if (doc.exists) {
             // Document found, update the rideStatus in the state
             setRideStatus(doc.data().rideStatus);
-            setLiveRideData(doc.data());
+            // Add the document ID to the data
+            const dataWithId = doc.data();
+            dataWithId.rideId = doc.id;
+
+            setLiveRideData(dataWithId);
           } else {
             console.log("Document does not exist");
           }
@@ -253,6 +259,10 @@ const MapDirectionsScreen = ({ route }) => {
             <View style={[styles.driverInfoContainer, tw``]}>
               <TouchableOpacity
                 style={tw`border-gray-700 border rounded-sm py-4 px-10 bg-yellow-400 justify-center items-center w-full`}
+                onPress={() => {
+                  console.log("Contact Driver pressed");
+                  navigation.navigate("ChatScreen", { liveRideData });
+                }}
               >
                 <Text style={tw`text-gray-900 uppercase font-bold text-sm`}>
                   {/* Add a Link to Contact Driver Page */}

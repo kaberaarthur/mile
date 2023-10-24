@@ -88,6 +88,9 @@ const ConfirmCodeScreen = ({ navigation, route }) => {
                 var user = userCredential.user;
                 console.log("USER DOCUMENT: ", firstDocument);
 
+                delete firstDocument.dateRegistered;
+                delete firstDocument.otpDate;
+
                 // setUser & setPerson
                 dispatch(setPerson(firstDocument));
                 dispatch(setUser(firstDocument));

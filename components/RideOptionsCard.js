@@ -21,7 +21,7 @@ import {
 import { setPerson, selectPerson } from "../slices/personSlice";
 import { setRide, selectRide } from "../slices/rideSlice";
 
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import firebase from "firebase/compat/app";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -87,6 +87,56 @@ const data = [
 ];
 
 const RideOptionsCard = ({ route }) => {
+  const [userUID, setUserUID] = useState(null);
+
+  // Get the Current User's UID
+  useEffect(() => {
+    // Define the cleanup function for unsubscribing
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        const uid = user.uid;
+        console.log("User UID:", uid);
+        setUserUID(uid);
+      } else {
+        // No user is signed in.
+        console.log("No user is signed in.");
+      }
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const [person, setPerson] = useState(null);
+
+  // Get the Curr User's Rider Data
+  useEffect(() => {
+    if (userUID) {
+      // Define the query to get the rider document based on userUID
+      const query = db.collection("riders").where("authID", "==", userUID);
+
+      // Subscribe to Firestore updates for the query
+      const unsubscribe = query.onSnapshot((querySnapshot) => {
+        if (!querySnapshot.empty) {
+          // Document matching the condition exists
+          const doc = querySnapshot.docs[0]; // Access the first (and only) document
+          const riderData = doc.data();
+          riderData.documentId = doc.id;
+          setPerson(riderData);
+          console.log("Rider Document Data:", riderData);
+        } else {
+          console.log("No matching documents found");
+        }
+      });
+
+      // Clean up the listener when the component unmounts
+      return () => unsubscribe();
+    }
+  }, [userUID]);
+
   const dispatch = useDispatch();
 
   const {
@@ -120,8 +170,8 @@ const RideOptionsCard = ({ route }) => {
   const origin = useSelector(selectOrigin);
   const destination = useSelector(selectDestination);
 
-  const person = useSelector(selectPerson);
-  console.log("Current Person ROC: ", person);
+  // const person = useSelector(selectPerson);
+  // console.log("Current Person ROC: ", person);
 
   const currentRide = useSelector(selectRide);
   console.log("Current Person ROC: ", currentRide);
@@ -137,15 +187,6 @@ const RideOptionsCard = ({ route }) => {
   // Get User Data
   const firstUser = useSelector((state) => state.user.user);
 
-  if (firstUser && Object.keys(firstUser).length > 0) {
-    // Data is available, you can use it here
-    console.log("User data from the Redux store ROC:", firstUser);
-    const theUser = firstUser;
-  } else {
-    // Data is still loading or not available
-    console.log("Data is still loading or not available");
-  }
-
   const loading = false;
 
   if (loading) {
@@ -153,7 +194,7 @@ const RideOptionsCard = ({ route }) => {
   }
 
   const handlePress = async () => {
-    console.log("Person Data ROC: ", person);
+    console.log("Person Data Rider ID: ", person.documentId);
 
     // Check type of Coupon if It Exists and Add it Below
     const deduction = roundToNearestTen(
@@ -191,57 +232,131 @@ const RideOptionsCard = ({ route }) => {
       return formattedDate;
     }
 
-    // Create Ride a Document
-    const rideDocRef = db.collection("rides").doc();
-    const rideData = {
-      couponCode: promoCode,
-      couponSet: promoCodeStatus,
-      couponType: couponType,
-      couponAmount: couponAmount,
-      couponPercent: couponPercent,
-      dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-      discountPercent: "",
-      discountSet: false,
-      driverId: "",
-      driverName: "",
-      driverPhone: "",
-      driverRating: "",
-      endTime: "",
-      paymentMethod: paymentMethod,
-      rideDestination: destinationObj,
-      rideLevel: selected.title,
-      rideOrigin: originObj,
-      rideStatus: "1",
-      rideTravelInformation: travelTimeInformationObj,
-      riderId: person.authID,
-      riderName: person.name,
-      riderPhone: person.phone,
-      riderRating: 4.5,
-      startTime: "",
-      totalDeduction: deduction,
-      totalClientPays: totalWithDeductions,
-      totalFareBeforeDeduction: theGrandTotal,
-      vehicleBrand: "",
-      vehicleCC: "",
-      vehicleId: "",
-      vehicleLicense: "",
-      vehicleName: "",
-    };
+    // Define a reference to the Firestore collection "rides"
+    const ridesCollection = db.collection("rides");
 
-    await rideDocRef.set(rideData);
+    // Define the query to check if a document with the specified conditions exists
+    const query = ridesCollection
+      .where("rideStatus", "==", "1")
+      .where("riderId", "==", person["authID"])
+      .limit(1);
 
-    // Remove the 'dateCreated' property from rideData before dispatching
-    delete rideData.dateCreated;
+    // Execute the query to get the matching documents
+    const querySnapshot = await query.get();
 
-    console.log("Document successfully written!");
+    if (!querySnapshot.empty) {
+      // If a matching document exists, update its data
+      const doc = querySnapshot.docs[0]; // Access the first (and only) document
+      const rideDocRef = doc.ref;
 
-    // Dispatch ride data to the store
-    const rideId = rideDocRef.id;
-    rideData.documentId = rideId; // Add the document ID to your data
-    dispatch(setRide(rideData)); // Dispatch the data to the store
+      // Define the data you want to update in the existing document
+      const updateData = {
+        couponCode: promoCode,
+        couponSet: promoCodeStatus,
+        couponType: couponType,
+        couponAmount: couponAmount,
+        couponPercent: couponPercent,
+        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+        discountPercent: "",
+        discountSet: false,
+        driverId: "",
+        driverName: "",
+        driverPhone: "",
+        driverRating: "",
+        endTime: "",
+        paymentMethod: paymentMethod,
+        rideDestination: destinationObj,
+        rideLevel: selected.title,
+        rideOrigin: originObj,
+        rideStatus: "1",
+        rideTravelInformation: travelTimeInformationObj,
+        riderId: person.authID,
+        riderName: person.name,
+        riderPhone: person.phone,
+        riderRating: 4.5,
+        startTime: "",
+        totalDeduction: deduction,
+        totalClientPays: totalWithDeductions,
+        totalFareBeforeDeduction: theGrandTotal,
+        vehicleBrand: "",
+        vehicleCC: "",
+        vehicleId: "",
+        vehicleLicense: "",
+        vehicleName: "",
+      };
 
-    // Navigate to WaitDriverScreen and pass rideData as a parameter
-    navigation.navigate("MapDirectionScreen", { rideData });
+      await rideDocRef.update(updateData);
+
+      // Remove the 'dateCreated' property from rideData before dispatching
+      delete updateData.dateCreated;
+
+      console.log("Empty Ride Document Updated!");
+
+      // Dispatch ride data to the store
+      const rideId = rideDocRef.id;
+      updateData.documentId = rideId; // Add the document ID to your data
+      dispatch(setRide(updateData)); // Dispatch the data to the store
+
+      // Try This
+      const rideData = updateData;
+
+      // Navigate to WaitDriverScreen and pass rideData as a parameter
+      navigation.navigate("MapDirectionScreen", { rideData });
+    } else {
+      // If no matching document exists, create a new one
+      const rideDocRef = ridesCollection.doc(); // Create a new document reference
+
+      // Define the data for the new document
+      const rideData = {
+        couponCode: promoCode,
+        couponSet: promoCodeStatus,
+        couponType: couponType,
+        couponAmount: couponAmount,
+        couponPercent: couponPercent,
+        dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
+        discountPercent: "",
+        discountSet: false,
+        driverId: "",
+        driverName: "",
+        driverPhone: "",
+        driverRating: "",
+        endTime: "",
+        paymentMethod: paymentMethod,
+        rideDestination: destinationObj,
+        rideLevel: selected.title,
+        rideOrigin: originObj,
+        rideStatus: "1",
+        rideTravelInformation: travelTimeInformationObj,
+        riderId: person.authID,
+        riderName: person.name,
+        riderPhone: person.phone,
+        riderRating: 4.5,
+        startTime: "",
+        totalDeduction: deduction,
+        totalClientPays: totalWithDeductions,
+        totalFareBeforeDeduction: theGrandTotal,
+        vehicleBrand: "",
+        vehicleCC: "",
+        vehicleId: "",
+        vehicleLicense: "",
+        vehicleName: "",
+      };
+
+      // Set the new document data
+      await rideDocRef.set(rideData);
+      // Remove the 'dateCreated' property from rideData before dispatching
+      delete rideData.dateCreated;
+
+      console.log("Document successfully written!");
+
+      // Dispatch ride data to the store
+      const rideId = rideDocRef.id;
+      rideData.documentId = rideId; // Add the document ID to your data
+      dispatch(setRide(rideData)); // Dispatch the data to the store
+
+      // Navigate to WaitDriverScreen and pass rideData as a parameter
+      navigation.navigate("MapDirectionScreen", { rideData });
+    }
   };
 
   return (

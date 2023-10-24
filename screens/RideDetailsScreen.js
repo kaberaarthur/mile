@@ -29,6 +29,8 @@ export default function RideDetails({ route }) {
   });
   */
 
+  // Get Current User
+
   // Convert Date to Human Friendly Date
   function formatDate(dateString) {
     const date = new Date(dateString);

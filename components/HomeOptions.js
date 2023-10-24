@@ -8,10 +8,10 @@ import { useNavigation } from "@react-navigation/native";
 const data = [
   {
     id: "1",
-    icon: "wallet",
-    title: "My Wallet",
-    description: "Check available funds in your wallet",
-    screen: "WalletScreen",
+    icon: "list",
+    title: "Current Ride",
+    description: "View Current Ride",
+    screen: "RideDetailsScreen",
   },
   {
     id: "2",
@@ -38,10 +38,10 @@ const data = [
   // Test Screen
   {
     id: "5",
-    icon: "list",
-    title: "Test",
-    description: "Test Activities",
-    screen: "TestScreen",
+    icon: "wallet",
+    title: "My Wallet",
+    description: "Check available funds in your wallet",
+    screen: "WalletScreen",
   },
 ];
 
