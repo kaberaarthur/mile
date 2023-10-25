@@ -261,7 +261,7 @@ const MapDirectionsScreen = ({ route }) => {
                 style={tw`border-gray-700 border rounded-sm py-4 px-10 bg-yellow-400 justify-center items-center w-full`}
                 onPress={() => {
                   console.log("Contact Driver pressed");
-                  navigation.navigate("ChatScreen", { liveRideData });
+                  navigation.navigate("RideDetailsScreen", { liveRideData });
                 }}
               >
                 <Text style={tw`text-gray-900 uppercase font-bold text-sm`}>

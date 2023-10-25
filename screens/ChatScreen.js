@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Linking,
 } from "react-native";
 import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
@@ -186,8 +187,8 @@ const ChatScreen = ({ route }) => {
         <Text style={tw`text-lg font-bold text-center`}>{ride.riderName}</Text>
         <TouchableOpacity
           onPress={() => {
-            const phone = "0790485731"; // Replace with the actual phone number
-            Linking.openURL(`tel:${phone}`);
+            //const phone = "0790485731"; // Replace with the actual phone number
+            Linking.openURL(`tel:${ride.driverPhone}`);
           }}
         >
           <Icon type="ionicon" name="call-outline" color="black" size={24} />
