@@ -45,21 +45,43 @@ const SignUpScreen = () => {
     const max = 999999; // Maximum 4-digit number
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
+  const expectedCode = generateRandomCode();
 
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(null);
 
-  const sendOTP = () => {
-    console.log("Sending OTP Now");
+  const sendOTP = (phoneNumber, expectedCode) => {
+    console.log("Phone Number: " + phoneNumber);
+    console.log("OTP Code: " + expectedCode);
+
+    // Create a reference to the "otps" collection
+    const otpsCollection = db.collection("otps");
+
+    // Create a new document with phoneNumber, expectedCode, and a timestamp
+    otpsCollection
+      .add({
+        phone: phoneNumber,
+        otp: expectedCode,
+        date: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then((docRef) => {
+        console.log("Document written with ID: ", docRef.id);
+      })
+      .catch((error) => {
+        console.error("Error adding document: ", error);
+      });
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     setIsLoading(true);
-
-    const expectedCode = generateRandomCode();
+    // setPhoneNumber(phoneNumber)
 
     // Check if Phone Number is empty
     if (phoneNumber) {
-      db.collection("riders")
+      // Send the OTP Code
+      sendOTP(phoneNumber, expectedCode);
+
+      await db
+        .collection("riders")
         .where("phone", "==", phoneNumber)
         .get()
         .then((querySnapshot) => {
@@ -82,9 +104,6 @@ const SignUpScreen = () => {
               .then(() => {
                 console.log("Document successfully written!");
                 console.log("OTP: " + expectedCode);
-
-                // Send the OTP Code
-                sendOTP();
 
                 // New Document ID
                 const newDocumentId = newRiderRef.id;
@@ -114,7 +133,7 @@ const SignUpScreen = () => {
                   console.log("OTP: " + expectedCode);
 
                   // Write the Code to send the OTP Here
-                  sendOTP();
+                  // sendOTP();
 
                   // Rider Profile Document ID
                   setRiderProfileID(doc.id);
@@ -145,6 +164,21 @@ const SignUpScreen = () => {
     Linking.openURL("https://mile.ke");
   };
 
+  const [phoneError, setPhoneError] = useState(false);
+
+  const isValidPhoneNumber = (phone) => {
+    // Regular expression to match a valid phone number format
+    const phonePattern = /^\+254\d{9}$/;
+
+    if (!phone || !phone.match(phonePattern)) {
+      return false;
+      setPhoneError(true);
+    }
+
+    return true;
+    setPhoneError(false);
+  };
+
   return (
     <SafeAreaView style={tw`flex-1 justify-center items-center`}>
       <View style={tw`w-4/5`}>
@@ -154,10 +188,19 @@ const SignUpScreen = () => {
         <View style={tw`border border-black rounded-sm mt-2`}>
           <TextInput
             style={tw`w-full px-4 py-2`}
-            placeholder="+254 7** *** ***"
-            onChangeText={(text) => setPhoneNumber(text)} // Update the state variable when the input changes
+            placeholder="+2547123456**"
+            onChangeText={(text) => {
+              setPhoneNumber(text); // Update the state variable when the input changes
+              setPhoneError(false); // Clear any previous phone error
+            }}
           />
         </View>
+        {phoneError && (
+          <Text style={tw`text-red-500 text-sm text-center`}>
+            Invalid phone number format. Please enter a valid phone number.
+          </Text>
+        )}
+
         {isLoading ? (
           <TouchableOpacity
             style={[tw`rounded-sm mt-4 px-4 py-2`, styles.customColor]}
@@ -167,7 +210,13 @@ const SignUpScreen = () => {
         ) : (
           <TouchableOpacity
             style={[tw`rounded-sm mt-4 px-4 py-2`, styles.customColor]}
-            onPress={handleSignIn}
+            onPress={() => {
+              if (isValidPhoneNumber(phoneNumber)) {
+                handleSignIn();
+              } else {
+                setPhoneError(true);
+              }
+            }}
           >
             <Text style={tw`text-black text-lg text-center`}>Sign in</Text>
           </TouchableOpacity>
