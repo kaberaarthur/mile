@@ -80,6 +80,7 @@ export default function RideDetails() {
 
           const rideData = doc.data();
           rideData.documentId = doc.id;
+          rideData.rideId = doc.id;
           console.log("Ride Document Data:", rideData);
           // Push rideData to State
           setRide(rideData);

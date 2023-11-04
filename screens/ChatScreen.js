@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
+  Linking,
   ScrollView,
 } from "react-native";
 import { Icon } from "react-native-elements";
@@ -20,6 +21,7 @@ const ChatScreen = ({ route }) => {
   const [authID, setAuthID] = useState(null);
 
   const ride = liveRideData;
+  console.log("Current Ride: ", ride.rideId);
 
   useEffect(() => {
     // Listen for changes in authentication state
@@ -27,7 +29,7 @@ const ChatScreen = ({ route }) => {
       if (user) {
         // User is signed in, get their AuthID
         setAuthID(user.uid);
-        console.log("Current User: " + user.uid);
+        // console.log("Current User: " + user.uid);
       } else {
         // User is signed out, reset AuthID
         setAuthID(null);
@@ -94,7 +96,7 @@ const ChatScreen = ({ route }) => {
       });
       setRideMessages(updatedMessages);
 
-      console.log("Ride Messages: ", updatedMessages);
+      // console.log("Ride Messages: ", updatedMessages);
     });
 
     // Clean up the subscription when the component unmounts
@@ -157,7 +159,7 @@ const ChatScreen = ({ route }) => {
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    console.log("New Message: ", newMessage);
+    // console.log("New Message: ", newMessage);
 
     // Add the message to the 'messages' collection
     messagesRef
@@ -183,7 +185,7 @@ const ChatScreen = ({ route }) => {
             size={24}
           />
         </TouchableOpacity>
-        <Text style={tw`text-lg font-bold text-center`}>{ride.riderName}</Text>
+        <Text style={tw`text-lg font-bold text-center`}>{ride.driverName}</Text>
         <TouchableOpacity
           onPress={() => {
             const phone = "0790485731"; // Replace with the actual phone number
@@ -223,6 +225,12 @@ const ChatScreen = ({ route }) => {
             <Icon type="ionicon" name="send" color="#F5B800" size={24} />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={tw`flex-row items-center p-4 bg-white`}
+          onPress={() => navigation.navigate("RideDetailsScreen")}
+        >
+          <Text>Ride Details</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
