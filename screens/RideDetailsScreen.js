@@ -20,6 +20,10 @@ import { ActivityIndicator } from "react-native";
 export default function RideDetails() {
   const navigation = useNavigation();
   const [ride, setRide] = useState(null);
+
+  const [driverName, setDriverName] = useState(null);
+  const [driverPhone, setDriverPhone] = useState(null);
+  const [driverCar, setDriverCar] = useState(null);
   // const driverFirstName = ride.driverName.split(" ")[0];
   // const endTime = new Date(ride.endTime);
 
@@ -94,6 +98,22 @@ export default function RideDetails() {
       });
   }, [userUID]);
 
+  useEffect(() => {
+    if (liveRideData) {
+      console.log("Live Ride Data: ", liveRideData);
+
+      setDriverCar(
+        liveRideData["vehicleBrand"] +
+          ", " +
+          liveRideData["vehicleName"] +
+          ", " +
+          liveRideData["vehicleLicense"]
+      );
+      setDriverName(liveRideData["driverName"]);
+      setDriverPhone(liveRideData["driverPhone"]);
+    }
+  }, [liveRideData]);
+
   // Convert Date to Human Friendly Date
   function formatDate(dateString) {
     const date = new Date(dateString);
@@ -131,6 +151,12 @@ export default function RideDetails() {
   }
 
   const [isModalVisible, setModalVisible] = useState(false);
+
+  // Use useEffect to set modalVisible to false
+  useEffect(() => {
+    // Set modalVisible to false after component is mounted
+    setModalVisible(false);
+  }, []);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -209,13 +235,23 @@ export default function RideDetails() {
             />
           </MapView>
 
-          <View style={tw`my-5`}>
+          <View style={tw`mt-5 mb-2`}>
             <Text style={tw`font-bold mb-2`}>
               Origin: {ride.rideOrigin[0].description}
             </Text>
             <Text style={tw`font-bold mb-2`}>
               Destination: {ride.rideDestination[0].description}
             </Text>
+          </View>
+
+          <View style={tw`my-2`}>
+            <Text style={tw`font-bold mb-2`}>
+              Driver Name: {ride.driverName}
+            </Text>
+            <Text style={tw`font-bold mb-2`}>
+              Driver Contact: {ride.driverPhone}
+            </Text>
+            <Text style={tw`font-bold mb-2`}>Vehicle: {driverCar}</Text>
           </View>
 
           <View style={tw`flex-row justify-between`}>
@@ -256,9 +292,10 @@ export default function RideDetails() {
               </View>
               <TouchableOpacity
                 style={tw`flex-row items-center mb-5`}
-                onPress={() =>
-                  navigation.navigate("ChatScreen", { liveRideData })
-                }
+                onPress={() => {
+                  setModalVisible(false);
+                  navigation.navigate("ChatScreen", { liveRideData });
+                }}
               >
                 <Icon
                   type="ionicon"

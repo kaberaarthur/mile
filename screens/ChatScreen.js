@@ -225,12 +225,14 @@ const ChatScreen = ({ route }) => {
             <Icon type="ionicon" name="send" color="#F5B800" size={24} />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={tw`flex-row items-center p-4 bg-white`}
-          onPress={() => navigation.navigate("RideDetailsScreen")}
-        >
-          <Text>Ride Details</Text>
-        </TouchableOpacity>
+        <View style={tw`flex-row items-center p-2`}>
+          <TouchableOpacity
+            style={tw`flex-1 flex-row items-center justify-center py-4 px-8 bg-black`}
+            onPress={() => navigation.navigate("RideDetailsScreen")}
+          >
+            <Text style={tw`text-white text-xl`}>Ride Details</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
