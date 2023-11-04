@@ -190,11 +190,8 @@ export default function RideDetails() {
         <Text>Ride Details</Text>
       </View>
        */}
-      <View
-        style={tw`flex-row items-center`}
-        onPress={() => navigation.goBack()}
-      >
-        <TouchableOpacity>
+      <View style={tw`flex-row items-center`}>
+        <TouchableOpacity onPress={() => navigation.navigate("HomeScreen")}>
           <Icon
             type="ionicon"
             name="arrow-back-outline"
