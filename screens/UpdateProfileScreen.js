@@ -274,9 +274,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
         />
       </View>
       <View>
-        <Text style={tw`text-red-600 text-lg font-semibold`}>
-          {submitError}
-        </Text>
+        <Text style={tw`text-red-600 text-lg`}>{submitError}</Text>
       </View>
 
       {/* Submit Button */}
@@ -290,7 +288,7 @@ const UpdateProfileScreen = ({ navigation, route }) => {
         <TouchableOpacity
           style={tw`bg-yellow-500 rounded-sm py-4 px-8 justify-center items-center`}
           onPress={handleSubmit}
-          disabled={!riderName || !isEmailValid(riderEmail)} // Disable based on conditions
+          // disabled={!riderName || !isEmailValid(riderEmail)} // Disable based on conditions
         >
           <Text style={tw`text-gray-900 text-lg font-semibold`}>Submit</Text>
         </TouchableOpacity>
