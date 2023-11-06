@@ -169,9 +169,36 @@ const PartnershipsScreen = () => {
     );
   };
 
+  // Withdraw the Earnings
+  const withdrawEarnings = async (earnings) => {
+    // Initialize a Firestore batch
+    const batch = db.batch();
+
+    // Loop through each earning and add an update operation to the batch
+    earnings.forEach((earning) => {
+      const earningRef = db.collection("partnerEarnings").doc(earning.id);
+      batch.update(earningRef, { paid: true });
+    });
+
+    try {
+      // Commit the batch to update all documents at once
+      await batch.commit();
+      console.log("Earnings withdrawn successfully.");
+    } catch (error) {
+      console.error("Error withdrawing earnings:", error);
+    }
+  };
+
+  // Effect the Withdrawals
+  // Add Mpesa C2B Here
+  const handleWithdrawEarnings = () => {
+    // Call the withdrawEarnings function with partnerEarnings
+    withdrawEarnings(partnerEarnings);
+  };
+
   return (
     <View style={tw`flex-1 py-10`}>
-      <View style={[tw`h-1/3 items-center justify-center`, styles.customColor]}>
+      <View style={[tw`h-1/2 items-center justify-center`, styles.customColor]}>
         <TouchableOpacity
           style={tw`absolute left-2 top-2`}
           onPress={() => navigation.goBack()}
@@ -207,6 +234,14 @@ const PartnershipsScreen = () => {
         >
           <Text style={tw`text-sm text-gray-900`}>Copy Code</Text>
         </TouchableOpacity>
+        <View style={tw`m-2`}>
+          <TouchableOpacity
+            style={tw`mt-1 bg-gray-900 py-2 px-10 rounded`}
+            onPress={handleWithdrawEarnings}
+          >
+            <Text style={tw`text-sm text-yellow-400`}>Withdraw Earnings</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <ScrollView style={tw`h-2/3 flex-1 bg-white`}>
         {partnerEarnings.map((earning) => (
