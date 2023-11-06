@@ -6,15 +6,12 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import tw from "tailwind-react-native-classnames";
 import { Icon } from "react-native-elements";
-import { useDispatch, useSelector } from "react-redux";
-import { selectPerson, setPerson } from "../slices/personSlice";
-import { fetchUserData, selectUser } from "../slices/userSlice";
-
 import { db, auth } from "../firebaseConfig";
+import { ActivityIndicator } from "react-native";
 
 const user = {
   id: "1",
@@ -40,19 +37,56 @@ const handleLogout = () => {
 };
 
 const ProfileScreen = () => {
-  const person = useSelector(selectPerson);
   const navigation = useNavigation();
 
-  // Inside your component
-  const firstUser = useSelector((state) => state.user.user);
+  const [person, setPerson] = useState(null);
+  const [userUID, setUserUID] = useState(null);
 
-  if (firstUser && Object.keys(firstUser).length > 0) {
-    // Data is available, you can use it here
-    console.log("User data from the Redux store:", firstUser);
-  } else {
-    // Data is still loading or not available
-    console.log("Data is still loading or not available");
-  }
+  // Get the Current User's UID
+  useEffect(() => {
+    // Define the cleanup function for unsubscribing
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        const uid = user.uid;
+        console.log("User UID:", uid);
+        setUserUID(uid);
+      } else {
+        // No user is signed in.
+        console.log("No user is signed in.");
+      }
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Get User Details from Riders Collection
+  useEffect(() => {
+    if (userUID) {
+      // Define the query to get the rider document based on userUID
+      const query = db.collection("riders").where("authID", "==", userUID);
+
+      // Subscribe to Firestore updates for the query
+      const unsubscribe = query.onSnapshot((querySnapshot) => {
+        if (!querySnapshot.empty) {
+          // Document matching the condition exists
+          const doc = querySnapshot.docs[0]; // Access the first (and only) document
+          const riderData = doc.data();
+          riderData.documentId = doc.id;
+          setPerson(riderData);
+          console.log("Rider Document Data:", riderData);
+        } else {
+          console.log("No matching documents found");
+        }
+      });
+
+      // Clean up the listener when the component unmounts
+      return () => unsubscribe();
+    }
+  }, [userUID]);
 
   return (
     <SafeAreaView style={[tw`bg-white pt-5 h-full`]}>
@@ -72,24 +106,32 @@ const ProfileScreen = () => {
         />
       </View>
       <View style={[tw`flex-1 items-center justify-center`]}>
-        <Image
-          source={user.imageUrl}
-          style={[
-            tw`w-24 h-24 mb-4`,
-            {
-              borderRadius: 100,
-            },
-          ]}
-        />
-        <Text style={tw`text-center text-2xl font-bold text-gray-800`}>
-          {firstUser["name"]}
-        </Text>
-        <Text style={tw`text-center text-base text-gray-600`}>
-          {firstUser["phone"]}
-        </Text>
-        <Text style={tw`text-center text-base text-gray-600`}>
-          {firstUser["email"]}
-        </Text>
+        {person ? (
+          <>
+            <Image
+              source={{ uri: person.profilePicture }}
+              style={[
+                tw`w-24 h-24 mb-4`,
+                {
+                  borderRadius: 100,
+                },
+              ]}
+            />
+            <Text style={tw`text-center text-2xl font-bold text-gray-800`}>
+              {person.name}
+            </Text>
+            <Text style={tw`text-center text-base text-gray-600`}>
+              {person.phone}
+            </Text>
+            <Text style={tw`text-center text-base text-gray-600`}>
+              {person.email}
+            </Text>
+          </>
+        ) : (
+          <View style={tw`text-center`}>
+            <ActivityIndicator size="large" color="#030813" />
+          </View>
+        )}
       </View>
 
       <View style={tw`my-5 border-b border-gray-500`} />
