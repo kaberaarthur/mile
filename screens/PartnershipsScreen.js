@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,9 +11,11 @@ import { Icon } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import { useNavigation } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
+import { db, auth } from "../firebaseConfig";
+import firebase from "firebase/compat/app";
 
 import { useDispatch, useSelector } from "react-redux";
-import { selectPerson, setPerson } from "../slices/personSlice";
+// import { selectPerson, setPerson } from "../slices/personSlice";
 import { selectUser, setUser } from "../slices/userSlice";
 
 const partnerData = {
@@ -36,14 +38,119 @@ const partnerData = {
 };
 
 const PartnershipsScreen = () => {
-  const person = useSelector(selectPerson);
+  // Get Current User 'Riders' ID
+  const [userUID, setUserUID] = useState(null);
+
+  // Get the Current User's UID
+  useEffect(() => {
+    // Define the cleanup function for unsubscribing
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        const uid = user.uid;
+        console.log("User UID:", uid);
+        setUserUID(uid);
+      } else {
+        // No user is signed in.
+        console.log("No user is signed in.");
+      }
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Get User Details from Riders Collection
+  const [person, setPerson] = useState(null);
+  useEffect(() => {
+    if (userUID) {
+      // Define the query to get the rider document based on userUID
+      const query = db.collection("riders").where("authID", "==", userUID);
+
+      // Subscribe to Firestore updates for the query
+      const unsubscribe = query.onSnapshot((querySnapshot) => {
+        if (!querySnapshot.empty) {
+          // Document matching the condition exists
+          const doc = querySnapshot.docs[0]; // Access the first (and only) document
+          const riderData = doc.data();
+          riderData.documentId = doc.id;
+          setPerson(riderData);
+          console.log("Rider Document Data:", riderData);
+        } else {
+          console.log("No matching documents found");
+        }
+      });
+
+      // Clean up the listener when the component unmounts
+      return () => unsubscribe();
+    }
+  }, [userUID]);
+
+  // We now have access to the Referre Code, use that to Reveal Rides Where a Commission was Generated
+  // Get Partner Earnings for Current User
+  const [partnerEarnings, setPartnerEarnings] = useState([]);
+
+  useEffect(() => {
+    // Check if person exists and has a valid documentId
+    if (person && person.documentId) {
+      // Reference to the Firestore collection
+      const db = firebase.firestore();
+      const partnerEarningsRef = db.collection("partnerEarnings");
+
+      // Create a query to fetch documents where paid is false and referrer is equal to person.documentId
+      const query = partnerEarningsRef
+        .where("paid", "==", false)
+        .where("referrer", "==", person.documentId);
+
+      // Subscribe to the query and update the state when the data changes
+      const unsubscribe = query.onSnapshot((snapshot) => {
+        const partnerEarningsData = [];
+        snapshot.forEach((doc) => {
+          partnerEarningsData.push({ id: doc.id, ...doc.data() });
+        });
+        setPartnerEarnings(partnerEarningsData);
+      });
+
+      // Clean up the subscription when the component unmounts
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [person]);
+
+  useEffect(() => {
+    // Check if Partner Earnings Exist
+    if (partnerEarnings) {
+      console.log("Partner Earnings: ", partnerEarnings);
+    }
+  }, [partnerEarnings]);
+
+  // const person = useSelector(selectPerson);
   const theUser = useSelector((state) => state.user.user);
 
   const navigation = useNavigation();
-  const totalEarnings = partnerData.earnings.reduce(
-    (sum, earning) => sum + earning.total,
-    0
-  );
+
+  const [totalEarnings, setTotalEarnings] = useState([]);
+
+  // Get Total of All Commissions
+  useEffect(() => {
+    if (partnerEarnings.length > 0) {
+      // Calculate the total partnerCommission
+      const total = partnerEarnings.reduce((acc, earning) => {
+        // Convert partnerCommission to float, add it to the accumulator, and truncate to a whole number
+        return acc + parseFloat(earning.partnerCommission) || 0;
+      }, 0);
+
+      // Truncate to a whole number
+      const truncatedTotal = Math.trunc(total);
+
+      setTotalEarnings(truncatedTotal);
+      console.log("Partner Earnings Total: ", total);
+    }
+  }, [partnerEarnings]);
+
   const partnerLink = `https://mile.ke/partners/${theUser["partnerCode"]}`;
 
   const copyLinkToClipboard = async () => {
@@ -102,14 +209,16 @@ const PartnershipsScreen = () => {
         </TouchableOpacity>
       </View>
       <ScrollView style={tw`h-2/3 flex-1 bg-white`}>
-        {partnerData.earnings.map((earning) => (
+        {partnerEarnings.map((earning) => (
           <View
             key={earning.id}
             style={tw`flex-row py-4 px-6 bg-white mt-3 mx-3 rounded-sm shadow-md`}
           >
-            <Text style={tw`text-lg text-gray-800`}>{earning.id}</Text>
+            <Text style={tw`text-lg text-gray-800`}>
+              {"MT" + earning.id.slice(-6)}
+            </Text>
             <Text style={tw`text-lg font-bold text-gray-800 ml-auto`}>
-              Ksh. {earning.total}
+              Ksh. {earning.partnerCommission}
             </Text>
           </View>
         ))}
