@@ -299,6 +299,9 @@ const RideOptionsCard = ({ route }) => {
       updateData.documentId = rideId; // Add the document ID to your data
       dispatch(setRide(updateData)); // Dispatch the data to the store
 
+      // Create Partner Commission
+      calculateAndStoreCommission(person, totalWithDeductions);
+
       // Try This
       const rideData = updateData;
 
@@ -356,6 +359,9 @@ const RideOptionsCard = ({ route }) => {
       rideData.documentId = rideId; // Add the document ID to your data
       dispatch(setRide(rideData)); // Dispatch the data to the store
 
+      // Create Partner Commission
+      calculateAndStoreCommission(person, totalWithDeductions);
+
       // Navigate to WaitDriverScreen and pass rideData as a parameter
       navigation.navigate("MapDirectionScreen", { rideData });
     }
@@ -363,7 +369,7 @@ const RideOptionsCard = ({ route }) => {
 
   // Calculate Refferrer Commission
   const calculateAndStoreCommission = async (person, totalWithDeductions) => {
-    if (person.referrer) {
+    if (person.referralCode) {
       // Calculate 15% of totalWithDeductions
       const firstLevelCommission = 0.15 * totalWithDeductions;
 
@@ -376,7 +382,7 @@ const RideOptionsCard = ({ route }) => {
       // Find the document in the 'riders' collection
       const riderDoc = await db
         .collection("riders")
-        .where("partnerCode", "==", person.referrer)
+        .where("partnerCode", "==", person.referralCode)
         .get();
 
       if (!riderDoc.empty) {
@@ -385,22 +391,22 @@ const RideOptionsCard = ({ route }) => {
         // Create a new record in the 'partnerEarnings' collection
         const timestamp = firebase.firestore.FieldValue.serverTimestamp();
         const partnerCommission = stateConstant;
-        const referrer = person.referrer;
+        const referralCode = person.referralCode;
         const rideAmount = totalWithDeductions;
 
         await db.collection("partnerEarnings").add({
           date: timestamp,
           paid: false,
           partnerCommission,
-          referrer,
+          referralCode,
           rideAmount,
           riderId,
         });
       } else {
-        console.error("Referrer not found in 'riders' collection.");
+        console.log("Referrer not found in 'riders' collection.");
       }
     } else {
-      console.error("Person does not have a referrer.");
+      console.log("Person does not have a referrer.");
     }
   };
 
