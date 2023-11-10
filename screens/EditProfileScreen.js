@@ -31,6 +31,7 @@ const EditProfileScreen = () => {
   const [imageError, setImageError] = useState("");
   const [photo, setPhoto] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageSelect = async () => {
     const permissionResult =
@@ -46,6 +47,8 @@ const EditProfileScreen = () => {
 
       if (!pickerResult.canceled) {
         setImage(pickerResult.assets[0].uri);
+
+        /*
         console.log(pickerResult.assets[0].uri);
 
         const imageUri = pickerResult.assets[0].uri;
@@ -82,6 +85,7 @@ const EditProfileScreen = () => {
           console.error("Error uploading image: ", error);
           setImageError(error.message);
         }
+        */
       }
     } catch (error) {
       console.error("Error handling image: ", error);
@@ -127,6 +131,8 @@ const EditProfileScreen = () => {
   const dispatch = useDispatch();
 
   const updateProfile = async (documentId) => {
+    setIsLoading(true);
+
     const updatedName = userName.trim();
 
     if (updatedName) {
@@ -155,9 +161,7 @@ const EditProfileScreen = () => {
               .child(`documents/profile-pictures/${filename}`);
 
             storageRef.put(blob);
-            console.log("Image uploaded successfully");
-
-            /*
+            // console.log("Image uploaded successfully");
 
             try {
               await storageRef.put(blob);
@@ -181,7 +185,6 @@ const EditProfileScreen = () => {
             } catch (error) {
               console.error("Error uploading image: ", error);
             }
-            */
           } else {
             navigation.goBack();
           }
@@ -190,6 +193,7 @@ const EditProfileScreen = () => {
           console.error("Error updating document: ", error);
         });
     }
+    setIsLoading(false);
   };
 
   return (
@@ -240,13 +244,11 @@ const EditProfileScreen = () => {
           </View>
         )}
         {person ? (
-          <Text style={tw`text-lg text-gray-600 mt-4`}>
-            Name: {person.documentId}
-          </Text>
+          <Text style={tw`text-lg text-gray-600 mt-4`}>Name</Text>
         ) : null}
         <TextInput
           style={tw`border border-gray-300 mt-2 p-2 rounded-sm`}
-          value={userName}
+          value={person.name}
           onChangeText={setName}
         />
       </View>
@@ -258,7 +260,7 @@ const EditProfileScreen = () => {
             styles.customColor,
           ]}
           onPress={() => updateProfile(person.documentId)}
-          disabled={!userName || !person.documentId}
+          disabled={!userName || !person.documentId || isLoading} // Disable button if isLoading is true
         >
           <Text style={tw`text-gray-900 font-bold text-lg`}>
             Update Profile
@@ -266,7 +268,11 @@ const EditProfileScreen = () => {
         </TouchableOpacity>
       ) : (
         <View style={tw`text-center`}>
-          <ActivityIndicator size="large" color="#030813" />
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#030813" />
+          ) : (
+            <Text>Some other content or message when not loading...</Text>
+          )}
         </View>
       )}
     </SafeAreaView>

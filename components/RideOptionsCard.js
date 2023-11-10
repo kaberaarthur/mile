@@ -196,6 +196,8 @@ const RideOptionsCard = ({ route }) => {
   const handlePress = async () => {
     console.log("Person Data Rider ID: ", person.documentId);
 
+    // Check if there is a referrer
+
     // Check type of Coupon if It Exists and Add it Below
     const deduction = roundToNearestTen(
       calculateDeduction(
@@ -356,6 +358,49 @@ const RideOptionsCard = ({ route }) => {
 
       // Navigate to WaitDriverScreen and pass rideData as a parameter
       navigation.navigate("MapDirectionScreen", { rideData });
+    }
+  };
+
+  // Calculate Refferrer Commission
+  const calculateAndStoreCommission = async (person, totalWithDeductions) => {
+    if (person.referrer) {
+      // Calculate 15% of totalWithDeductions
+      const firstLevelCommission = 0.15 * totalWithDeductions;
+
+      // Calculate 15% of the 15%
+      const secondLevelCommission = 0.15 * firstLevelCommission;
+
+      // Assume you have a state constant called 'stateConstant'
+      const stateConstant = secondLevelCommission;
+
+      // Find the document in the 'riders' collection
+      const riderDoc = await db
+        .collection("riders")
+        .where("partnerCode", "==", person.referrer)
+        .get();
+
+      if (!riderDoc.empty) {
+        const riderId = riderDoc.docs[0].id;
+
+        // Create a new record in the 'partnerEarnings' collection
+        const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+        const partnerCommission = stateConstant;
+        const referrer = person.referrer;
+        const rideAmount = totalWithDeductions;
+
+        await db.collection("partnerEarnings").add({
+          date: timestamp,
+          paid: false,
+          partnerCommission,
+          referrer,
+          rideAmount,
+          riderId,
+        });
+      } else {
+        console.error("Referrer not found in 'riders' collection.");
+      }
+    } else {
+      console.error("Person does not have a referrer.");
     }
   };
 
