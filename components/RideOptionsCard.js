@@ -386,13 +386,15 @@ const RideOptionsCard = ({ route }) => {
         .get();
 
       if (!riderDoc.empty) {
-        const riderId = riderDoc.docs[0].id;
+        const documentId = riderDoc.docs[0].id;
 
         // Create a new record in the 'partnerEarnings' collection
         const timestamp = firebase.firestore.FieldValue.serverTimestamp();
         const partnerCommission = stateConstant;
         const referralCode = person.referralCode;
         const rideAmount = totalWithDeductions;
+        const referrer = documentId;
+        const riderId = person.documentId;
 
         await db.collection("partnerEarnings").add({
           date: timestamp,
@@ -401,6 +403,7 @@ const RideOptionsCard = ({ route }) => {
           referralCode,
           rideAmount,
           riderId,
+          referrer,
         });
       } else {
         console.log("Referrer not found in 'riders' collection.");
