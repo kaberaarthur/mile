@@ -32,22 +32,23 @@ const NavigateCard = () => {
       {/*<Greeting />*/}
       <Text>Good Evening, John</Text>
       <View style={tw`border-t border-gray-200 flex-shrink`}>
-        <GooglePlacesAutocomplete
-          placeholder="Enter your destination"
-          styles={toInputBoxStyles}
-          fetchDetails={true}
-          returnKeyType={"search"}
-          minLength={2}
-          onPress={(data, details = null) => {
-            dispatch(
-              setDestination({
-                location: details.geometry.location,
-                description: data.description,
-              })
-            );
+        <ScrollView>
+          <GooglePlacesAutocomplete
+            placeholder="Enter your destination"
+            styles={toInputBoxStyles}
+            fetchDetails={true}
+            returnKeyType={"search"}
+            minLength={2}
+            onPress={(data, details = null) => {
+              dispatch(
+                setDestination({
+                  location: details.geometry.location,
+                  description: data.description,
+                })
+              );
 
-            // Dispatch Data to Ride Slice
-            /*
+              // Dispatch Data to Ride Slice
+              /*
             dispatch(
               setRide({
                 destination: {
@@ -58,17 +59,18 @@ const NavigateCard = () => {
             );
             */
 
-            // Navigate to Ride Options
-            // navigation.navigate("RideOptionsCard");
-            // console.log(details.geometry.location);
-          }}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: "en",
-          }}
-          nearbyPlacesAPI="GooglePlacesSearch"
-          debounce={200}
-        />
+              // Navigate to Ride Options
+              // navigation.navigate("RideOptionsCard");
+              // console.log(details.geometry.location);
+            }}
+            query={{
+              key: GOOGLE_MAPS_APIKEY,
+              language: "en",
+            }}
+            nearbyPlacesAPI="GooglePlacesSearch"
+            debounce={200}
+          />
+        </ScrollView>
         <NavFavourites />
       </View>
 

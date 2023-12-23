@@ -24,25 +24,27 @@ const EnterWorkLocationScreen = () => {
   return (
     <SafeAreaView style={[tw`bg-white pt-5 h-full`]}>
       <View style={styles.container}>
-        <GooglePlacesAutocomplete
-          placeholder="Enter your work location"
-          styles={toInputBoxStyles}
-          onPress={(data, details = null) => {
-            setLocationSelected(true);
-            console.log(details.geometry.location);
-            console.log(data.description);
-          }}
-          fetchDetails={true}
-          returnKeyType={"search"}
-          enablePoweredByContainer={false}
-          minLength={2}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: "en",
-          }}
-          nearbyPlacesAPI="GooglePlacesSearch"
-          debounce={200}
-        />
+        <ScrollView>
+          <GooglePlacesAutocomplete
+            placeholder="Enter your work location"
+            styles={toInputBoxStyles}
+            onPress={(data, details = null) => {
+              setLocationSelected(true);
+              console.log(details.geometry.location);
+              console.log(data.description);
+            }}
+            fetchDetails={true}
+            returnKeyType={"search"}
+            enablePoweredByContainer={false}
+            minLength={2}
+            query={{
+              key: GOOGLE_MAPS_APIKEY,
+              language: "en",
+            }}
+            nearbyPlacesAPI="GooglePlacesSearch"
+            debounce={200}
+          />
+        </ScrollView>
         <TouchableOpacity
           style={[
             styles.button,
