@@ -120,23 +120,24 @@ const HomeScreen = () => {
           source={require("../assets/mile.png")}
         />
 
-        <GooglePlacesAutocomplete
-          placeholder="Add a pickup location"
-          styles={toInputBoxStyles}
-          onPress={(data, details = null) => {
-            // console.log(person.name);
+        <ScrollView>
+          <GooglePlacesAutocomplete
+            placeholder="Add a pickup location"
+            styles={toInputBoxStyles}
+            onPress={(data, details = null) => {
+              // console.log(person.name);
 
-            dispatch(
-              setOrigin({
-                location: details.geometry.location,
-                description: data.description,
-              })
-            );
+              dispatch(
+                setOrigin({
+                  location: details.geometry.location,
+                  description: data.description,
+                })
+              );
 
-            dispatch(setDestination(null));
+              dispatch(setDestination(null));
 
-            // Dispatch Data to Ride Slice
-            /*
+              // Dispatch Data to Ride Slice
+              /*
             dispatch(
               setRide({
                 origin: {
@@ -149,22 +150,23 @@ const HomeScreen = () => {
               })
             );
             */
-          }}
-          fetchDetails={true}
-          returnKeyType={"search"}
-          enablePoweredByContainer={false}
-          minLength={2}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: "en",
-          }}
-          nearbyPlacesAPI="GooglePlacesSearch"
-          debounce={200}
-          /*
+            }}
+            fetchDetails={true}
+            returnKeyType={"search"}
+            enablePoweredByContainer={false}
+            minLength={2}
+            query={{
+              key: GOOGLE_MAPS_APIKEY,
+              language: "en",
+            }}
+            nearbyPlacesAPI="GooglePlacesSearch"
+            debounce={200}
+            /*
           currentLocation={true}
           currentLocationLabel="Current location"
           */
-        />
+          />
+        </ScrollView>
 
         <NavOptions />
 
