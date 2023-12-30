@@ -6,6 +6,8 @@ import {
   View,
   Image,
   ScrollView,
+  FlatList,
+  TextInput,
 } from "react-native";
 import tw from "tailwind-react-native-classnames";
 import NavOptions from "../components/NavOptions";
@@ -36,6 +38,35 @@ const HomeScreen = () => {
   const [user, setUser] = useState(null);
 
   const [userData, setUserData] = useState([]);
+  const [predictions, setPredictions] = useState([]);
+  const [inputText, setInputText] = useState("");
+
+  useEffect(() => {
+    if (inputText.trim() !== "") {
+      // Encode input text for URL
+      const encodedInput = encodeURIComponent(inputText);
+
+      // API call
+      fetch(
+        `https://mile-cab-app.uc.r.appspot.com/get_place_suggestions?input_text=${encodedInput}`
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok.");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPredictions(data.predictions || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching suggestions:", error);
+          setPredictions([]);
+        });
+    } else {
+      setPredictions([]);
+    }
+  }, [inputText]);
 
   // console.log(person);
 
@@ -120,6 +151,7 @@ const HomeScreen = () => {
           source={require("../assets/mile.png")}
         />
 
+        {/*
         <GooglePlacesAutocomplete
           placeholder="Add a pickup location"
           styles={toInputBoxStyles}
@@ -135,20 +167,7 @@ const HomeScreen = () => {
 
             dispatch(setDestination(null));
 
-            // Dispatch Data to Ride Slice
-            /*
-            dispatch(
-              setRide({
-                origin: {
-                  location: details.geometry.location,
-                  description: data.description,
-                },
-                riderName: person.name,
-                rideStatus: "1",
-                riderId: person.authID,
-              })
-            );
-            */
+           
           }}
           fetchDetails={true}
           returnKeyType={"search"}
@@ -160,10 +179,35 @@ const HomeScreen = () => {
           }}
           nearbyPlacesAPI="GooglePlacesSearch"
           debounce={200}
-          /*
-          currentLocation={true}
-          currentLocationLabel="Current location"
-          */
+        />
+         */}
+        <TextInput
+          style={{
+            height: 40,
+            borderColor: "gray",
+            borderWidth: 1,
+            marginBottom: 20,
+            paddingHorizontal: 10,
+          }}
+          onChangeText={(text) => setInputText(text)}
+          value={inputText}
+          placeholder="Where to?"
+        />
+        <FlatList
+          data={predictions}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: "#ccc",
+                paddingVertical: 10,
+              }}
+            >
+              <Text>{item}</Text>
+            </View>
+          )}
+          ListEmptyComponent={<Text>No places found</Text>}
         />
 
         <NavOptions />

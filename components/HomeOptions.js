@@ -56,31 +56,33 @@ const HomeOptions = () => {
   const navigation = useNavigation();
 
   return (
-    <FlatList
-      data={data}
-      keyExtractor={(item) => item.id}
-      ItemSeparatorComponent={() => (
-        <View style={[tw`bg-gray-200`, { height: 0.5 }]} />
-      )}
-      renderItem={({ item: { title, description, icon, screen } }) => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate(screen)}
-          style={tw`flex-row items-center p-2`}
-        >
-          <Icon
-            style={tw`mr-4 rounded-full bg-gray-300 p-3`}
-            name={icon}
-            type="ionicon"
-            color="white"
-            size={18}
-          />
-          <View>
-            <Text style={tw`font-semibold text-lg`}>{title}</Text>
-            <Text style={tw`text-gray-500`}>{description}</Text>
-          </View>
-        </TouchableOpacity>
-      )}
-    />
+    <View style={{ maxHeight: 200 }}>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={() => (
+          <View style={[tw`bg-gray-200`, { height: 0.5 }]} />
+        )}
+        renderItem={({ item: { title, description, icon, screen } }) => (
+          <TouchableOpacity
+            onPress={() => navigation.navigate(screen)}
+            style={tw`flex-row items-center p-2`}
+          >
+            <Icon
+              style={tw`mr-4 rounded-full bg-gray-300 p-3`}
+              name={icon}
+              type="ionicon"
+              color="white"
+              size={18}
+            />
+            <View>
+              <Text style={tw`font-semibold text-lg`}>{title}</Text>
+              <Text style={tw`text-gray-500`}>{description}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
   );
 };
 

@@ -1,123 +1,125 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
   SafeAreaView,
   TouchableOpacity,
+  FlatList,
+  TextInput,
 } from "react-native";
 import tw from "tailwind-react-native-classnames";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { GOOGLE_MAPS_APIKEY } from "@env";
 import { useDispatch, useSelector } from "react-redux";
-import { selectDestination, setDestination } from "../slices/navSlice";
-import { useNavigation } from "@react-navigation/native";
 import NavFavourites from "./NavFavourites";
-import { Icon } from "react-native-elements";
-import Greeting from "./Greeting";
-
-import { setRide, selectRide } from "../slices/rideSlice";
+import { selectDestination, setDestination } from "../slices/navSlice";
 
 const NavigateCard = () => {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const [inputText, setInputText] = useState("");
+  const [predictions, setPredictions] = useState([]);
+  const [origin, setOrigin] = useState(null);
 
-  /*
-  const ride = useSelector(selectRide);
-  console.log("Ride Data NavigateCard.js: ", ride);
-  */
+  useEffect(() => {
+    if (inputText.trim() !== "") {
+      const encodedInput = encodeURIComponent(inputText);
+
+      fetch(
+        `https://mile-cab-app.uc.r.appspot.com/get_full_place_data?input_text=${encodedInput}`
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok.");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPredictions(data.predictions || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching predictions:", error);
+          setPredictions([]);
+        });
+    } else {
+      setPredictions([]);
+    }
+  }, [inputText]);
+
+  const handleItemPress = (item) => {
+    fetch(
+      `https://mile-cab-app.uc.r.appspot.com/get_place_details?place_id=${item.place_id}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const result = data.result || {};
+
+        dispatch(
+          setDestination({
+            location: result.geometry.location,
+            description: item.description,
+          })
+        );
+
+        setInputText("");
+
+        console.log("Location: ", result.geometry.location);
+        console.log("Location Description: ", item.description);
+      })
+      .catch((error) => {
+        console.error("Error fetching place details:", error);
+        setOrigin(null);
+      });
+  };
 
   return (
     <SafeAreaView style={tw`bg-white flex-1`}>
-      {/*<Greeting />*/}
-      <Text>Good Evening, John</Text>
+      {/*<Text>Good Evening, John</Text>*/}
       <View style={tw`border-t border-gray-200 flex-shrink`}>
-        <ScrollView>
-          <GooglePlacesAutocomplete
+        <View style={tw`py-2 px-6`}>
+          <TextInput
+            style={styles.input}
+            onChangeText={setInputText}
+            value={inputText}
             placeholder="Enter your destination"
-            styles={toInputBoxStyles}
-            fetchDetails={true}
-            returnKeyType={"search"}
-            minLength={2}
-            onPress={(data, details = null) => {
-              dispatch(
-                setDestination({
-                  location: details.geometry.location,
-                  description: data.description,
-                })
-              );
-
-              // Dispatch Data to Ride Slice
-              /*
-            dispatch(
-              setRide({
-                destination: {
-                  location: details.geometry.location,
-                  description: data.description,
-                },
-              })
-            );
-            */
-
-              // Navigate to Ride Options
-              // navigation.navigate("RideOptionsCard");
-              // console.log(details.geometry.location);
-            }}
-            query={{
-              key: GOOGLE_MAPS_APIKEY,
-              language: "en",
-            }}
-            nearbyPlacesAPI="GooglePlacesSearch"
-            debounce={200}
           />
-        </ScrollView>
-        <NavFavourites />
-      </View>
-
-      {/* 
-      <View
-        style={tw`flex-row bg-white justify-evenly py-2 mt-auto border-t border-gray-100`}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.navigate("RideOptionsCard")}
-          style={tw`flex flex-row justify-between bg-black w-24 px-4 py-3 rounded-full`}
-        >
-          <Icon name="car" type="font-awesome" color="white" size={16} />
-          <Text style={tw`text-white text-center`}>Rides</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={tw`flex flex-row justify-between w-24 px-4 py-3 rounded-full`}
-        >
-          <Icon
-            name="fast-food-outline"
-            type="ionicon"
-            color="black"
-            size={16}
+          <FlatList
+            data={predictions}
+            keyExtractor={(item) => item.place_id}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => handleItemPress(item)}>
+                <View
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#ccc",
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text>{item.description}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={<Text>No places found</Text>}
           />
-          <Text style={tw`text-center`}>Eats</Text>
-        </TouchableOpacity>
+        </View>
+        {inputText === "" && <NavFavourites />}
+        {/*  Include NavFavourites component */}
       </View>
-      */}
     </SafeAreaView>
   );
 };
 
 export default NavigateCard;
 
-const toInputBoxStyles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    paddingTop: 20,
-    flex: 0,
-  },
-  textInput: {
-    backgroundColor: "#DDDDDF",
-    borderRadius: 0,
-    fontSize: 18,
-  },
-  textInputContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 0,
+const styles = StyleSheet.create({
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
 });
