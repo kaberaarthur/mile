@@ -12,12 +12,13 @@ import tw from "tailwind-react-native-classnames";
 import { useDispatch, useSelector } from "react-redux";
 import NavFavourites from "./NavFavourites";
 import { selectDestination, setDestination } from "../slices/navSlice";
+import { setOrigin } from "../slices/navSlice";
 
 const NavigateCard = () => {
   const dispatch = useDispatch();
   const [inputText, setInputText] = useState("");
   const [predictions, setPredictions] = useState([]);
-  const [origin, setOrigin] = useState(null);
+  // const [origin, setOrigin] = useState(null);
 
   useEffect(() => {
     if (inputText.trim() !== "") {

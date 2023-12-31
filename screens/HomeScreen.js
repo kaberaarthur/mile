@@ -147,8 +147,6 @@ const HomeScreen = () => {
 
         setInputText("");
 
-        dispatch(setDestination(null));
-
         console.log("Location: ", result.geometry.location);
         console.log("Location Description: ", item.description);
       })
@@ -171,7 +169,7 @@ const HomeScreen = () => {
           }}
           onChangeText={setInputText}
           value={inputText}
-          placeholder="Where to?"
+          placeholder="Enter a Pickup Point?"
         />
 
         <FlatList

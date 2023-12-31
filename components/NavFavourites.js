@@ -147,22 +147,27 @@ const NavFavourites = () => {
   */
   }
 
-  const [destState, setDestState] = useState(null);
+  // const [destState, setDestState] = useState(null);
 
-  // Select the destination state from Redux
+  {
+    /* 
   const updatedDestination = useSelector(selectDestination);
+  const [localDestination, setLocalDestination] = useState(updatedDestination);
 
-  // Use useEffect to observe changes in the destination state
   useEffect(() => {
-    // Log the updated destination state whenever it changes
-    console.log("The Newest Destination:", updatedDestination);
-    setDestState(updatedDestination);
+    // Ensure updatedDestination is not null before logging or updating state
+    if (updatedDestination) {
+      console.log("The Newest Destination:", updatedDestination);
+      setLocalDestination(updatedDestination);
+    }
   }, [updatedDestination]);
 
-  if (destState == null) {
+  if (localDestination == null) {
     console.log("Destination is Null");
   } else {
     console.log("Destination has been Populated");
+  }
+  */
   }
 
   return (
@@ -201,13 +206,8 @@ const NavFavourites = () => {
             <ActivityIndicator size="large" color="#030813" />
           ) : (
             <TouchableOpacity
-              style={
-                destState === null
-                  ? tw`border-gray-700 border rounded-sm p-4 bg-gray-700 justify-center items-center`
-                  : tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`
-              }
+              style={tw`border-gray-700 border rounded-sm p-4 bg-gray-900 justify-center items-center`}
               onPress={handleRideNow}
-              disabled={destState === null}
             >
               <Text style={tw`text-white uppercase font-bold text-lg`}>
                 Ride Now

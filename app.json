@@ -21,7 +21,12 @@
         "foregroundImage": "./assets/adaptive-icon-01.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kabera.mileapp"
+      "package": "com.kabera.mileapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyD0kPJKSOU4qtXrvddyAZFHeXQY2LMrz_M"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
