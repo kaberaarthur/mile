@@ -4,72 +4,36 @@ import {
   Text,
   SafeAreaView,
   View,
-  Image,
-  ScrollView,
-  FlatList,
   TextInput,
+  TouchableOpacity,
+  FlatList,
 } from "react-native";
 import tw from "tailwind-react-native-classnames";
 import NavOptions from "../components/NavOptions";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { GOOGLE_MAPS_APIKEY } from "@env";
-import { useDispatch, useSelector } from "react-redux";
-import { setDestination, setOrigin } from "../slices/navSlice";
-import NavFavourites from "../components/NavFavourites";
 import HomeOptions from "../components/HomeOptions";
-navigator.geolocation = require("react-native-geolocation-service");
+import { setDestination, setOrigin } from "../slices/navSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-
-import { fetchUserData, selectUser } from "../slices/userSlice";
 
 import { setUser } from "../slices/userSlice";
 import { setPerson } from "../slices/personSlice";
 import { setRide, selectRide } from "../slices/rideSlice";
+import { fetchUserData, selectUser } from "../slices/userSlice";
 
 import { db, auth } from "../firebaseConfig";
 
-// Current Location - Pending Issue
-// Check React Native Maps Documentation
-
 const HomeScreen = () => {
   const dispatch = useDispatch();
+  const [inputText, setInputText] = useState("");
+  const [predictions, setPredictions] = useState([]);
+
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-
   const [userData, setUserData] = useState([]);
-  const [predictions, setPredictions] = useState([]);
-  const [inputText, setInputText] = useState("");
+  // const [origin, setOrigin] = useState(null);
 
-  useEffect(() => {
-    if (inputText.trim() !== "") {
-      // Encode input text for URL
-      const encodedInput = encodeURIComponent(inputText);
-
-      // API call
-      fetch(
-        `https://mile-cab-app.uc.r.appspot.com/get_place_suggestions?input_text=${encodedInput}`
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setPredictions(data.predictions || []);
-        })
-        .catch((error) => {
-          console.error("Error fetching suggestions:", error);
-          setPredictions([]);
-        });
-    } else {
-      setPredictions([]);
-    }
-  }, [inputText]);
-
-  // console.log(person);
-
+  // Take User Credentials
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -80,6 +44,7 @@ const HomeScreen = () => {
     return () => unsubscribe();
   }, []);
 
+  // Check if there is a logged in User
   useEffect(() => {
     if (loading) {
       // If still loading, don't do anything.
@@ -135,52 +100,67 @@ const HomeScreen = () => {
     console.log("Data is still loading or not available");
   }
 
-  if (loading) {
-    return null; // Or return a loading spinner.
-  }
+  useEffect(() => {
+    if (inputText.trim() !== "") {
+      const encodedInput = encodeURIComponent(inputText);
+
+      fetch(
+        `https://mile-cab-app.uc.r.appspot.com/get_full_place_data?input_text=${encodedInput}`
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok.");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPredictions(data.predictions || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching predictions:", error);
+          setPredictions([]);
+        });
+    } else {
+      setPredictions([]);
+    }
+  }, [inputText]);
+
+  const handleItemPress = (item) => {
+    fetch(
+      `https://mile-cab-app.uc.r.appspot.com/get_place_details?place_id=${item.place_id}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const result = data.result || {};
+
+        dispatch(
+          setOrigin({
+            location: result.geometry.location,
+            description: item.description,
+          })
+        );
+
+        setInputText("");
+
+        dispatch(setDestination(null));
+
+        console.log("Location: ", result.geometry.location);
+        console.log("Location Description: ", item.description);
+      })
+      .catch((error) => {
+        console.error("Error fetching place details:", error);
+        setOrigin(null);
+      });
+  };
 
   return (
-    <SafeAreaView style={[tw`bg-white h-full`]}>
+    <SafeAreaView style={[tw`bg-white h-full pt-10`]}>
       <View style={[tw`p-5`]}>
-        <Image
-          style={{
-            width: 100,
-            height: 100,
-            resizeMode: "contain",
-          }}
-          source={require("../assets/mile.png")}
-        />
-
-        {/*
-        <GooglePlacesAutocomplete
-          placeholder="Add a pickup location"
-          styles={toInputBoxStyles}
-          onPress={(data, details = null) => {
-            // console.log(person.name);
-
-            dispatch(
-              setOrigin({
-                location: details.geometry.location,
-                description: data.description,
-              })
-            );
-
-            dispatch(setDestination(null));
-
-           
-          }}
-          fetchDetails={true}
-          returnKeyType={"search"}
-          enablePoweredByContainer={false}
-          minLength={2}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: "en",
-          }}
-          nearbyPlacesAPI="GooglePlacesSearch"
-          debounce={200}
-        />
-         */}
         <TextInput
           style={{
             height: 40,
@@ -189,59 +169,35 @@ const HomeScreen = () => {
             marginBottom: 20,
             paddingHorizontal: 10,
           }}
-          onChangeText={(text) => setInputText(text)}
+          onChangeText={setInputText}
           value={inputText}
           placeholder="Where to?"
         />
+
         <FlatList
           data={predictions}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item.place_id}
           renderItem={({ item }) => (
-            <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: "#ccc",
-                paddingVertical: 10,
-              }}
-            >
-              <Text>{item}</Text>
-            </View>
+            <TouchableOpacity onPress={() => handleItemPress(item)}>
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#ccc",
+                  paddingVertical: 10,
+                }}
+              >
+                <Text>{item.description}</Text>
+              </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={<Text>No places found</Text>}
         />
-
-        <NavOptions />
-
-        <HomeOptions />
       </View>
+
+      <NavOptions />
+      {inputText === "" && <HomeOptions />}
     </SafeAreaView>
   );
 };
 
 export default HomeScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  text: {
-    color: "blue",
-  },
-});
-
-const toInputBoxStyles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    paddingTop: 20,
-    flex: 0,
-  },
-  textInput: {
-    backgroundColor: "#DDDDDF",
-    borderRadius: 0,
-    fontSize: 18,
-  },
-  textInputContainer: {
-    paddingHorizontal: 6,
-    paddingBottom: 0,
-  },
-});

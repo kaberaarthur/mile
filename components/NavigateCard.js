@@ -44,6 +44,9 @@ const NavigateCard = () => {
     }
   }, [inputText]);
 
+  // Select the destination state from Redux
+  const newDestination = useSelector(selectDestination);
+
   const handleItemPress = (item) => {
     fetch(
       `https://mile-cab-app.uc.r.appspot.com/get_place_details?place_id=${item.place_id}`
@@ -74,6 +77,12 @@ const NavigateCard = () => {
         setOrigin(null);
       });
   };
+
+  // Use useEffect to observe changes in the destination state
+  useEffect(() => {
+    // Log the updated destination state whenever it changes
+    console.log("Updated destination:", newDestination);
+  }, [newDestination]);
 
   return (
     <SafeAreaView style={tw`bg-white flex-1`}>

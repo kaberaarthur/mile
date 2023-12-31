@@ -207,10 +207,7 @@ const MapDirectionsScreen = ({ route }) => {
               <View>
                 <Text style={tw`text-gray-900 text-xs`}>Destination</Text>
                 <Text style={tw`text-gray-900 text-sm font-bold`}>
-                  {cropString(
-                    rideData["rideDestination"][0]["description"],
-                    20
-                  )}
+                  {cropString(rideData["rideOrigin"][0]["description"], 20)}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -222,7 +219,10 @@ const MapDirectionsScreen = ({ route }) => {
               <View>
                 <Text style={tw`text-gray-900 text-xs`}>Origin</Text>
                 <Text style={tw`text-gray-900 text-sm font-bold`}>
-                  {cropString(rideData["rideOrigin"][0]["description"], 20)}
+                  {cropString(
+                    rideData["rideDestination"][0]["description"],
+                    20
+                  )}
                 </Text>
               </View>
             </TouchableOpacity>
