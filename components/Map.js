@@ -59,7 +59,7 @@ const Map = () => {
         .then((res) => res.json())
         .then((data) => {
           dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
-          console.log(data.rows[0].elements[0]);
+          console.log("Travel Time Info: ", data.rows[0].elements[0]);
 
           /*
           dispatch(

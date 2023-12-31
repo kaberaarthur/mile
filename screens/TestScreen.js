@@ -1,122 +1,72 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  View,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import { View, Text, Button } from "react-native";
 import tw from "tailwind-react-native-classnames";
-import NavOptions from "../components/NavOptions";
-import HomeOptions from "../components/HomeOptions";
-import { setDestination, setOrigin } from "../slices/navSlice";
-import { useDispatch, useSelector } from "react-redux";
 
 const TestScreen = () => {
-  const dispatch = useDispatch();
-  const [inputText, setInputText] = useState("");
-  const [predictions, setPredictions] = useState([]);
-  // const [origin, setOrigin] = useState(null);
+  const [origin, setOrigin] = useState({
+    description: "TRM - Thika Road Mall, Nairobi, Kenya",
+    location: { lat: -1.2195761, lng: 36.88842440000001 },
+  });
 
-  useEffect(() => {
-    if (inputText.trim() !== "") {
-      const encodedInput = encodeURIComponent(inputText);
+  const [destination, setDestination] = useState({
+    description: "Juja City Mall, Kalimoni, Kenya",
+    location: { lat: -1.1177451, lng: 37.00892689999999 },
+  });
 
-      fetch(
-        `https://mile-cab-app.uc.r.appspot.com/get_full_place_data?input_text=${encodedInput}`
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setPredictions(data.predictions || []);
-        })
-        .catch((error) => {
-          console.error("Error fetching predictions:", error);
-          setPredictions([]);
-        });
-    } else {
-      setPredictions([]);
+  const [newTravelTimeInfo, setNewTravelTimeInfo] = useState(null);
+  const [error, setError] = useState(null);
+
+  // The logic to fetch travel time information
+  const getTravelTime = async () => {
+    try {
+      const encodedOrigin = encodeURIComponent(origin.description);
+      const encodedDestination = encodeURIComponent(destination.description);
+      const GOOGLE_MAPS_APIKEY = "AIzaSyD0kPJKSOU4qtXrvddyAZFHeXQY2LMrz_M"; // Replace with your API key
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodedOrigin}&destinations=${encodedDestination}&key=${GOOGLE_MAPS_APIKEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+
+      const data = await response.json();
+
+      setNewTravelTimeInfo(data.rows[0].elements[0]);
+
+      console.log(
+        "##### Travel Time Info - Test Screen: ",
+        data.rows[0].elements[0],
+        "#####"
+      );
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error);
+      // Handle error condition
     }
-  }, [inputText]);
-
-  const handleItemPress = (item) => {
-    fetch(
-      `https://mile-cab-app.uc.r.appspot.com/get_place_details?place_id=${item.place_id}`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok.");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const result = data.result || {};
-
-        dispatch(
-          setOrigin({
-            location: result.geometry.location,
-            description: item.description,
-          })
-        );
-
-        setInputText("");
-
-        dispatch(setDestination(null));
-
-        console.log("Location: ", result.geometry.location);
-        console.log("Location Description: ", item.description);
-      })
-      .catch((error) => {
-        console.error("Error fetching place details:", error);
-        setOrigin(null);
-      });
   };
 
+  useEffect(() => {
+    if (origin && destination) {
+      getTravelTime();
+    }
+  }, [origin, destination]);
+
   return (
-    <SafeAreaView style={[tw`bg-white h-full pt-10`]}>
-      <View style={[tw`p-5`]}>
-        <TextInput
-          style={{
-            height: 40,
-            borderColor: "gray",
-            borderWidth: 1,
-            marginBottom: 20,
-            paddingHorizontal: 10,
-          }}
-          onChangeText={setInputText}
-          value={inputText}
-          placeholder="Where to?"
-        />
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Test Screen</Text>
+      <Text>Ride Options Card Origin: {JSON.stringify(origin)}</Text>
+      <Text>Ride Options Card Destination: {JSON.stringify(destination)}</Text>
+      <Text>
+        Travel Time Info:{" "}
+        {newTravelTimeInfo ? JSON.stringify(newTravelTimeInfo) : "No data"}
+      </Text>
+      {error && <Text style={{ color: "red" }}>{error.message}</Text>}
 
-        <FlatList
-          data={predictions}
-          keyExtractor={(item) => item.place_id}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleItemPress(item)}>
-              <View
-                style={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#ccc",
-                  paddingVertical: 10,
-                }}
-              >
-                <Text>{item.description}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={<Text>No places found</Text>}
-        />
-      </View>
-
-      <NavOptions />
-      {inputText === "" && <HomeOptions />}
-    </SafeAreaView>
+      {/* Display error */}
+      <Button title="Fetch Travel Time" onPress={getTravelTime} />
+    </View>
   );
 };
 

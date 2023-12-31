@@ -7,6 +7,13 @@ import { useNavigation } from "@react-navigation/native";
 
 const data = [
   {
+    id: "6",
+    icon: "list",
+    title: "Test Screen",
+    description: "View Test Content",
+    screen: "TestScreen",
+  },
+  {
     id: "1",
     icon: "list",
     title: "Current Ride",

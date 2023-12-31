@@ -6,7 +6,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
@@ -17,6 +17,7 @@ import {
   selectTravelTimeInformation,
   selectDestination,
   selectOrigin,
+  setTravelTimeInformation,
 } from "../slices/navSlice";
 import { setPerson, selectPerson } from "../slices/personSlice";
 import { setRide, selectRide } from "../slices/rideSlice";
@@ -24,6 +25,7 @@ import { setRide, selectRide } from "../slices/rideSlice";
 import { db, auth } from "../firebaseConfig";
 import firebase from "firebase/compat/app";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { GOOGLE_MAPS_APIKEY } from "@env";
 
 // Round off Price to Nearest Ten
 function roundToNearestTen(number) {
@@ -88,6 +90,7 @@ const data = [
 
 const RideOptionsCard = ({ route }) => {
   const [userUID, setUserUID] = useState(null);
+  const isMounted = useRef(true);
 
   // Get the Current User's UID
   useEffect(() => {
@@ -165,10 +168,66 @@ const RideOptionsCard = ({ route }) => {
   const [totalData, setTotalData] = useState(null);
   const [deductionData, setDeductionData] = useState(null);
   const [afterDeductionData, setAfterDeductionData] = useState(null);
+  const [newTravelTimeInfo, setNewTravelTimeInfo] = useState(null);
 
   const travelTimeInformation = useSelector(selectTravelTimeInformation);
   const origin = useSelector(selectOrigin);
   const destination = useSelector(selectDestination);
+
+  if (origin) {
+    console.log("##### Ride Options Card Origin: ", origin);
+  } else {
+    console.log("Origin does not exist or is falsy.");
+  }
+
+  if (destination) {
+    console.log("##### Ride Options Card Destination: ", destination);
+  } else {
+    console.log("Destination does not exist or is falsy.");
+  }
+
+  // Calculate Time Taken + Distance
+  useEffect(() => {
+    if (!origin || !destination) return;
+
+    // Set the isMounted ref to true when the component mounts
+    isMounted.current = true;
+
+    // Encode URI Components
+    const encodedDestination = encodeURIComponent(destination.description);
+    const encodedOrigin = encodeURIComponent(origin.description);
+
+    const getTravelTime = async () => {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodedOrigin}&destinations=${encodedDestination}&key=${GOOGLE_MAPS_APIKEY}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+
+        const data = await response.json();
+
+        dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
+
+        if (isMounted.current) {
+          setNewTravelTimeInfo(data.rows[0].elements[0]);
+
+          console.log(
+            "##### Travel Time Info - Ride Options: ",
+            data.rows[0].elements[0],
+            "#####"
+          );
+        }
+      } catch (error) {
+        console.error("#### Error fetching data:", error, "####");
+        // Handle error condition
+      }
+    };
+
+    getTravelTime();
+  }, [origin, destination, GOOGLE_MAPS_APIKEY]);
 
   // const person = useSelector(selectPerson);
   // console.log("Current Person ROC: ", person);
@@ -182,7 +241,7 @@ const RideOptionsCard = ({ route }) => {
   // Transform Arrays
   const originObj = [origin];
   const destinationObj = [destination];
-  const travelTimeInformationObj = [travelTimeInformation];
+  const travelTimeInformationObj = [newTravelTimeInfo];
 
   // Get User Data
   const firstUser = useSelector((state) => state.user.user);
@@ -202,7 +261,7 @@ const RideOptionsCard = ({ route }) => {
     const deduction = roundToNearestTen(
       calculateDeduction(
         30 *
-          parseInt(travelTimeInformation?.duration.text.replace(/ mins/, "")) *
+          parseInt(newTravelTimeInfo?.duration.text.replace(/ mins/, "")) *
           selected.multiplier,
         couponType,
         couponAmount,
@@ -214,7 +273,7 @@ const RideOptionsCard = ({ route }) => {
     const theGrandTotal = roundToNearestTen(
       calculatePrice(
         30 *
-          parseInt(travelTimeInformation?.duration.text.replace(/ mins/, "")) *
+          parseInt(newTravelTimeInfo?.duration.text.replace(/ mins/, "")) *
           selected.multiplier,
         couponType,
         couponAmount,
@@ -435,46 +494,50 @@ const RideOptionsCard = ({ route }) => {
           </TouchableOpacity>
         </View>
       </View>
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item: { id, title, multiplier, image }, item }) => (
-          <TouchableOpacity
-            onPress={() => setSelected(item)}
-            style={tw`flex-row justify-between items-center px-6 ${
-              id === selected?.id && "bg-gray-200"
-            }`}
-          >
-            <Image
-              style={{
-                width: 100,
-                height: 100,
-                resizeMode: "contain",
-              }}
-              source={{ uri: image }}
-            />
-            <View style={tw`-ml-6`}>
-              <Text style={tw`text-xl font-semibold`}>{title}</Text>
-              <Text>{travelTimeInformation?.duration.text} - Travel time</Text>
-            </View>
-            <Text style={tw`text-base font-bold`}>
-              Kshs.
-              {roundToNearestTen(
-                calculatePrice(
-                  30 *
-                    parseInt(
-                      travelTimeInformation?.duration.text.replace(/ mins/, "")
-                    ) *
-                    multiplier,
-                  couponType,
-                  couponAmount,
-                  couponPercent
-                )
-              )}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+      {newTravelTimeInfo ? (
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item: { id, title, multiplier, image }, item }) => (
+            <TouchableOpacity
+              onPress={() => setSelected(item)}
+              style={tw`flex-row justify-between items-center px-6 ${
+                id === selected?.id && "bg-gray-200"
+              }`}
+            >
+              <Image
+                style={{
+                  width: 100,
+                  height: 100,
+                  resizeMode: "contain",
+                }}
+                source={{ uri: image }}
+              />
+              <View style={tw`-ml-6`}>
+                <Text style={tw`text-xl font-semibold`}>{title}</Text>
+                <Text>{newTravelTimeInfo?.duration.text} - Travel time</Text>
+              </View>
+              <Text style={tw`text-base font-bold`}>
+                Kshs.
+                {roundToNearestTen(
+                  calculatePrice(
+                    30 *
+                      parseInt(
+                        newTravelTimeInfo?.duration.text.replace(/ mins/, "")
+                      ) *
+                      multiplier,
+                    couponType,
+                    couponAmount,
+                    couponPercent
+                  )
+                )}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <Text>Waiting for travel time information...</Text>
+      )}
     </View>
   );
 };
