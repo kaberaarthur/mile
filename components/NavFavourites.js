@@ -11,7 +11,8 @@ import { db } from "../firebaseConfig";
 import { ActivityIndicator } from "react-native";
 
 import { setRide, selectRide } from "../slices/rideSlice";
-import { setDestination, selectDestination } from "../slices/navSlice";
+import { selectDestination, setDestination } from "../slices/navSlice";
+import { selectOrigin, setOrigin } from "../slices/navSlice";
 
 const NavFavourites = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,8 @@ const NavFavourites = () => {
 
   const person = useSelector(selectPerson);
   const destination = useSelector(selectDestination);
+  const origin = useSelector(selectOrigin);
+
   console.log("Current Person NF: ", person);
 
   const data = [
@@ -108,7 +111,13 @@ const NavFavourites = () => {
   };
 
   const handleRideNow = () => {
+    console.log("NavFavourites Origin Data: ", origin);
+    console.log("NavFavourites Origin Data: ", destination);
+
     navigation.navigate("RideOptionsCard", {
+      manualOrigin: origin, // Pass origin data
+      manualDestination: destination, // Pass destination data
+
       promoCodeStatus: couponStatus.exists,
       promoCode: couponStatus.exists ? promoCode : null,
       paymentMethod: selectedItem,

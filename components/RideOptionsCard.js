@@ -5,6 +5,7 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import tw from "tailwind-react-native-classnames";
@@ -91,6 +92,7 @@ const data = [
 const RideOptionsCard = ({ route }) => {
   const [userUID, setUserUID] = useState(null);
   const isMounted = useRef(true);
+  const [error, setError] = useState(null);
 
   // Get the Current User's UID
   useEffect(() => {
@@ -149,6 +151,9 @@ const RideOptionsCard = ({ route }) => {
     couponType,
     couponAmount,
     couponPercent,
+
+    manualOrigin,
+    manualDestination,
   } = route.params;
 
   console.log(
@@ -188,14 +193,23 @@ const RideOptionsCard = ({ route }) => {
 
   // Calculate Time Taken + Distance
   useEffect(() => {
-    if (!origin || !destination) return;
+    if (!manualOrigin || !manualDestination) return;
 
     // Set the isMounted ref to true when the component mounts
     isMounted.current = true;
 
     // Encode URI Components
-    const encodedDestination = encodeURIComponent(destination.description);
-    const encodedOrigin = encodeURIComponent(origin.description);
+    // const encodedDestination = encodeURIComponent(destination.description);
+    // const encodedOrigin = encodeURIComponent(origin.description);
+
+    // Use Params
+    const encodedDestination = encodeURIComponent(
+      manualDestination.description
+    );
+    const encodedOrigin = encodeURIComponent(manualOrigin.description);
+    const GOOGLE_MAPS_APIKEY = "AIzaSyD0kPJKSOU4qtXrvddyAZFHeXQY2LMrz_M";
+
+    // console.log("### ### ### Place Data: ", manualDestination, manualOrigin);
 
     const getTravelTime = async () => {
       try {
@@ -215,8 +229,10 @@ const RideOptionsCard = ({ route }) => {
           setNewTravelTimeInfo(data.rows[0].elements[0]);
 
           console.log(
-            "##### Travel Time Info - Ride Options: ",
+            "##### Travel Time Info - Ride Options:",
             data.rows[0].elements[0],
+            "- Timestamp: ",
+            new Date().toISOString(), // Add timestamp here
             "#####"
           );
         }
@@ -227,7 +243,7 @@ const RideOptionsCard = ({ route }) => {
     };
 
     getTravelTime();
-  }, [origin, destination, GOOGLE_MAPS_APIKEY]);
+  }, [manualOrigin, manualDestination, GOOGLE_MAPS_APIKEY]);
 
   // const person = useSelector(selectPerson);
   // console.log("Current Person ROC: ", person);
@@ -252,34 +268,79 @@ const RideOptionsCard = ({ route }) => {
     return null; // Or return a loading spinner.
   }
 
+  // Use Params
+  const encodedDestination = encodeURIComponent(manualDestination.description);
+  const encodedOrigin = encodeURIComponent(manualOrigin.description);
+  const GOOGLE_MAPS_APIKEY = "AIzaSyD0kPJKSOU4qtXrvddyAZFHeXQY2LMrz_M";
+
+  console.log("### ### ### Place Data Now: ", manualDestination, manualOrigin);
+
+  const getTravelTimeNow = async () => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodedOrigin}&destinations=${encodedDestination}&key=${GOOGLE_MAPS_APIKEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+
+      const data = await response.json();
+
+      dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
+
+      if (isMounted.current) {
+        setNewTravelTimeInfo(data.rows[0].elements[0]);
+
+        console.log(
+          "##### Travel Time Info - Ride Options: ",
+          data.rows[0].elements[0],
+          "#####"
+        );
+      }
+    } catch (error) {
+      console.error("#### Error fetching data:", error, "####");
+      // Handle error condition
+    }
+  };
+
+  useEffect(() => {
+    if (manualOrigin && manualDestination) {
+      getTravelTimeNow();
+    }
+  }, [manualOrigin, manualDestination]);
+
   const handlePress = async () => {
     console.log("Person Data Rider ID: ", person.documentId);
 
     // Check if there is a referrer
 
-    // Check type of Coupon if It Exists and Add it Below
-    const deduction = roundToNearestTen(
-      calculateDeduction(
-        30 *
-          parseInt(newTravelTimeInfo?.duration.text.replace(/ mins/, "")) *
-          selected.multiplier,
-        couponType,
-        couponAmount,
-        couponPercent
-      )
-    );
+    const deduction = newTravelTimeInfo
+      ? roundToNearestTen(
+          calculateDeduction(
+            30 *
+              parseInt(newTravelTimeInfo?.duration?.text.replace(/ mins/, "")) *
+              selected.multiplier,
+            couponType,
+            couponAmount,
+            couponPercent
+          )
+        )
+      : 0; // Set a default value or handle differently if newTravelTimeInfo is not available
 
     // Calculate the Total Price
-    const theGrandTotal = roundToNearestTen(
-      calculatePrice(
-        30 *
-          parseInt(newTravelTimeInfo?.duration.text.replace(/ mins/, "")) *
-          selected.multiplier,
-        couponType,
-        couponAmount,
-        couponPercent
-      )
-    );
+    const theGrandTotal = newTravelTimeInfo
+      ? roundToNearestTen(
+          calculatePrice(
+            30 *
+              parseInt(newTravelTimeInfo?.duration?.text.replace(/ mins/, "")) *
+              selected.multiplier,
+            couponType,
+            couponAmount,
+            couponPercent
+          )
+        )
+      : 0; // Set a default value or handle differently if newTravelTimeInfo is not available
 
     // Calculate Price if there are Deductions
     const totalWithDeductions = roundToNearestTen(
@@ -493,6 +554,27 @@ const RideOptionsCard = ({ route }) => {
             </Text>
           </TouchableOpacity>
         </View>
+        <View>
+          <Text>Ride Options Card Origin: {JSON.stringify(origin)}</Text>
+          <Text>
+            Ride Options Card Destination: {JSON.stringify(destination)}
+          </Text>
+          <Text>
+            Travel Time Info:{" "}
+            {newTravelTimeInfo
+              ? `${JSON.stringify(
+                  newTravelTimeInfo
+                )} - Timestamp: ${new Date().toISOString()}`
+              : "No data"}
+          </Text>
+          {error && <Text style={{ color: "red" }}>{error.message}</Text>}
+
+          {/* Display error */}
+          <Button
+            title="Fetch Travel Time"
+            onPress={() => getTravelTimeNow()}
+          />
+        </View>
       </View>
       {newTravelTimeInfo ? (
         <FlatList
@@ -513,25 +595,35 @@ const RideOptionsCard = ({ route }) => {
                 }}
                 source={{ uri: image }}
               />
-              <View style={tw`-ml-6`}>
-                <Text style={tw`text-xl font-semibold`}>{title}</Text>
-                <Text>{newTravelTimeInfo?.duration.text} - Travel time</Text>
-              </View>
-              <Text style={tw`text-base font-bold`}>
-                Kshs.
-                {roundToNearestTen(
-                  calculatePrice(
-                    30 *
-                      parseInt(
-                        newTravelTimeInfo?.duration.text.replace(/ mins/, "")
-                      ) *
-                      multiplier,
-                    couponType,
-                    couponAmount,
-                    couponPercent
-                  )
-                )}
-              </Text>
+              {newTravelTimeInfo && (
+                <View style={tw`-ml-6`}>
+                  <Text style={tw`text-xl font-semibold`}>{title}</Text>
+                  {newTravelTimeInfo && newTravelTimeInfo.duration && (
+                    <Text>{newTravelTimeInfo?.duration?.text}</Text>
+                  )}
+
+                  {newTravelTimeInfo && (
+                    <Text style={tw`text-base font-bold`}>
+                      Kshs.
+                      {roundToNearestTen(
+                        calculatePrice(
+                          30 *
+                            parseInt(
+                              newTravelTimeInfo?.duration?.text.replace(
+                                / mins/,
+                                ""
+                              )
+                            ) *
+                            multiplier,
+                          couponType,
+                          couponAmount,
+                          couponPercent
+                        )
+                      )}
+                    </Text>
+                  )}
+                </View>
+              )}
             </TouchableOpacity>
           )}
         />
